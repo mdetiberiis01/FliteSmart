@@ -1,0 +1,185 @@
+'use client';
+
+import { Suspense } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { SearchResult } from '@/types/search';
+import { ResultsGrid } from '@/components/results/ResultsGrid';
+import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
+
+const DestinationMap = dynamic(
+  () => import('@/components/map/DestinationMap').then((m) => m.DestinationMap),
+  { ssr: false }
+);
+
+function ResultsContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [isDemo, setIsDemo] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showMap, setShowMap] = useState(false);
+
+  const origin = searchParams.get('origin') || '';
+  const originName = searchParams.get('originName') || origin;
+  const destination = searchParams.get('destination') || '';
+  const flexibility = searchParams.get('flexibility') || 'anytime';
+  const tripDays = parseInt(searchParams.get('tripDays') || '7', 10);
+
+  useEffect(() => {
+    if (!origin || !destination) {
+      router.push('/');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    fetch('/api/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        origin,
+        originName,
+        destination,
+        flexibility,
+        tripDays,
+        customDateStart: searchParams.get('customDateStart') || undefined,
+        customDateEnd: searchParams.get('customDateEnd') || undefined,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) {
+          setError(data.error);
+        } else {
+          const r = data.results || [];
+          setResults(r);
+          setIsDemo(r.length > 0 && r[0].dataSource === 'demo');
+        }
+      })
+      .catch(() => setError('Search failed. Please check your connection.'))
+      .finally(() => setIsLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [origin, destination, flexibility]);
+
+  const flexLabel =
+    {
+      anytime: 'Anytime',
+      spring: 'Spring 🌸',
+      summer: 'Summer ☀️',
+      fall: 'Fall 🍂',
+      winter: 'Winter ❄️',
+      custom: 'Custom dates',
+    }[flexibility] || flexibility;
+
+  return (
+    <main className="min-h-screen">
+      {/* Top bar */}
+      <div className="border-b border-white/10 glass-card sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <button
+            onClick={() => router.push('/')}
+            className="text-white/60 hover:text-white transition text-sm flex items-center gap-2"
+          >
+            ← Back
+          </button>
+          <div className="text-center">
+            <span className="text-white font-semibold">
+              {originName} → {destination}
+            </span>
+            <span className="text-white/50 text-sm ml-2">{flexLabel}</span>
+          </div>
+          <button
+            onClick={() => setShowMap(!showMap)}
+            className="text-white/60 hover:text-white transition text-sm"
+          >
+            {showMap ? 'Hide map' : 'Show map'}
+          </button>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Map (optional) */}
+        {showMap && results.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="mb-6"
+          >
+            <DestinationMap results={results} origin={origin} />
+          </motion.div>
+        )}
+
+        {/* Results header */}
+        {!isLoading && !error && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mb-6"
+          >
+            <h2 className="text-white text-2xl font-bold">
+              {results.length > 0
+                ? `${results.length} flight${results.length !== 1 ? 's' : ''} found`
+                : 'Searching...'}
+            </h2>
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              <span className="text-white/50 text-sm">From {originName}</span>
+              <span className="text-white/20">·</span>
+              <span className="text-white/50 text-sm">{flexLabel}</span>
+              <span className="text-white/20">·</span>
+              <span className="glass-card border border-teal-500/30 text-teal-400 text-xs font-medium px-2.5 py-1 rounded-full">
+                {tripDays} day{tripDays !== 1 ? 's' : ''}
+              </span>
+              <span className="text-white/20">·</span>
+              <span className="text-white/50 text-sm">Prices per person roundtrip</span>
+            </div>
+          </motion.div>
+        )}
+
+        {error && (
+          <div className="glass-card border border-red-500/30 rounded-xl p-6 mb-6 text-center">
+            <p className="text-red-400">{error}</p>
+            <p className="text-white/50 text-sm mt-2">
+              Make sure your API keys are configured in .env.local
+            </p>
+          </div>
+        )}
+
+        {isDemo && !isLoading && (
+          <div className="glass-card border border-amber-500/30 rounded-xl px-5 py-4 mb-6 flex items-start gap-3">
+            <span className="text-amber-400 text-lg shrink-0">⚠️</span>
+            <div>
+              <p className="text-amber-400 font-medium text-sm">Demo mode — prices are illustrative</p>
+              <p className="text-white/50 text-xs mt-0.5">
+                These are sample flights to show the UI. Add your{' '}
+                <code className="text-white/70 bg-white/10 px-1 rounded">AMADEUS_CLIENT_ID</code> and{' '}
+                <code className="text-white/70 bg-white/10 px-1 rounded">AMADEUS_CLIENT_SECRET</code>{' '}
+                to <code className="text-white/70 bg-white/10 px-1 rounded">.env.local</code> for real prices.
+                Kayak links still open the correct route and dates.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <ResultsGrid results={results} isLoading={isLoading} />
+      </div>
+    </main>
+  );
+}
+
+export default function ResultsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-white/60 text-lg">Loading...</div>
+        </div>
+      }
+    >
+      <ResultsContent />
+    </Suspense>
+  );
+}

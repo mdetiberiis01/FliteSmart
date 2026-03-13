@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:developers.amadeus.com)",
+      "WebFetch(domain:tequila.kiwi.com)",
+      "WebFetch(domain:serpapi.com)",
+      "WebFetch(domain:kiwicom.github.io)",
+      "Read(//Users/mark/.local/share/claude/**)",
+      "Read(//Users/mark/.local/share/claude/versions/**)",
+      "Read(//usr/local/**)",
+      "Read(//private/etc/paths.d/**)",
+      "Bash(/dev/null ls:*)",
+      "Bash(export PATH=\"/Users/mark/.local/node-temp/node-v22.14.0-darwin-arm64/bin:$PATH\"\nnode --version && npm --version && npx --version)",
+      "Bash(export PATH=\"/Users/mark/.local/node-temp/node-v22.14.0-darwin-arm64/bin:$PATH\"\ncd \"/Users/mark/VS Code\"\nnpx create-next-app@latest flight-search --typescript --tailwind --eslint --app --src-dir=no --import-alias=\"@/*\" --no-git 2>&1)",
+      "Bash(export PATH=\"/Users/mark/.local/node-temp/node-v22.14.0-darwin-arm64/bin:$PATH\"\ncd \"/Users/mark/VS Code/flight-search\"\nnpm install @supabase/supabase-js framer-motion @formkit/auto-animate recharts leaflet react-leaflet @types/leaflet 2>&1)",
+      "Bash(export PATH=\"/Users/mark/.local/node-temp/node-v22.14.0-darwin-arm64/bin:$PATH\"\ncd \"/Users/mark/VS Code/flight-search\"\nnpm install -D @types/node 2>&1)",
+      "Bash(export PATH=\"/Users/mark/.local/node-temp/node-v22.14.0-darwin-arm64/bin:$PATH\"\ncd \"/Users/mark/VS Code/flight-search\"\nnpx shadcn@latest init -y 2>&1)",
+      "Bash(export PATH=\"/Users/mark/.local/node-temp/node-v22.14.0-darwin-arm64/bin:$PATH\"\ncd \"/Users/mark/VS Code/flight-search\"\necho \"\" | npx shadcn@2.5.0 add button input label badge card skeleton select command popover 2>&1)",
+      "Bash(export PATH=\"/Users/mark/.local/node-temp/node-v22.14.0-darwin-arm64/bin:$PATH\"\ncd \"/Users/mark/VS Code/flight-search\"\nnpm run build 2>&1)",
+      "Bash(export PATH=\"/Users/mark/.local/node-temp/node-v22.14.0-darwin-arm64/bin:$PATH\"\ncd \"/Users/mark/VS Code/flight-search\"\nnpm install tw-animate-css 2>&1)",
+      "Bash(export PATH=\"/Users/mark/.local/node-temp/node-v22.14.0-darwin-arm64/bin:$PATH\"\ncd \"/Users/mark/VS Code/flight-search\"\nnpm install tailwind-merge 2>&1)",
+      "Bash(export PATH=\"/Users/mark/.local/node-temp/node-v22.14.0-darwin-arm64/bin:$PATH\"\ncd \"/Users/mark/VS Code/flight-search\"\nnpm install class-variance-authority radix-ui 2>&1)",
+      "Bash(export PATH=\"/Users/mark/.local/node-temp/node-v22.14.0-darwin-arm64/bin:$PATH\"\ncd \"/Users/mark/VS Code/flight-search\"\nnpm install lucide-react cmdk 2>&1)",
+      "Bash(export PATH=\"/Users/mark/.local/node-temp/node-v22.14.0-darwin-arm64/bin:$PATH\" && cd \"/Users/mark/VS Code/flight-search\" && npm run build 2>&1)",
+      "WebFetch(domain:duffel.com)"
+    ]
+  }
+}
