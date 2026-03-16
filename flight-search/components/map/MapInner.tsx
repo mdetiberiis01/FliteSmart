@@ -10,20 +10,23 @@ interface Props {
 }
 
 const DEAL_COLORS: Record<string, string> = {
-  great: '#10b981',
-  good:  '#14b8a6',
-  fair:  '#f59e0b',
-  high:  '#ef4444',
+  great: '#34d399',
+  good:  '#a3a3a3',
+  fair:  '#d97706',
+  high:  '#dc2626',
 };
 
 function dealColor(rating: string | null | undefined): string {
   return DEAL_COLORS[rating ?? ''] ?? '#6b7280';
 }
 
+const TILE_DARK  = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+const TILE_LIGHT = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
 
 export default function MapInner({ results, origin }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<unknown>(null);
+  const tileLayerRef = useRef<unknown>(null);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -44,13 +47,15 @@ export default function MapInner({ results, origin }: Props) {
         scrollWheelZoom: false,
       }).setView([20, 0], 2);
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      const isDark = document.documentElement.classList.contains('dark');
+      const tileLayer = L.tileLayer(isDark ? TILE_DARK : TILE_LIGHT, {
         attribution: '©OpenStreetMap ©CartoDB',
         subdomains: 'abcd',
         maxZoom: 19,
       }).addTo(map);
 
       mapInstanceRef.current = map;
+      tileLayerRef.current = tileLayer;
 
       const originCoords = getAirportCoords(origin);
       const destPoints: [number, number][] = [];
@@ -62,7 +67,6 @@ export default function MapInner({ results, origin }: Props) {
 
         destPoints.push(destCoords);
 
-        // Destination marker
         const color = dealColor(result.dealRating);
         const icon = L.divIcon({
           className: '',
@@ -95,12 +99,12 @@ export default function MapInner({ results, origin }: Props) {
           .bindPopup(`
             <div style="font-family:system-ui,sans-serif;min-width:160px;">
               <div style="font-size:14px;font-weight:700;margin-bottom:4px;">${result.destinationCity ?? result.destination}</div>
-              <div style="font-size:12px;color:#aaa;margin-bottom:6px;">${result.destinationCountry ?? ''}</div>
+              <div style="font-size:12px;color:#888;margin-bottom:6px;">${result.destinationCountry ?? ''}</div>
               <div style="font-size:20px;font-weight:800;color:${color};margin-bottom:4px;">$${result.price}</div>
               ${dealLabel ? `<div style="margin-bottom:6px;">${dealLabel}</div>` : ''}
-              <div style="font-size:11px;color:#ccc;">${result.airline}</div>
-              ${depDate ? `<div style="font-size:11px;color:#999;margin-top:2px;">${depDate}${retDate ? ' → ' + retDate : ''}</div>` : ''}
-              ${result.stops === 0 ? '<div style="font-size:10px;color:#10b981;margin-top:2px;">Nonstop</div>' : `<div style="font-size:10px;color:#aaa;margin-top:2px;">${result.stops} stop${result.stops !== 1 ? 's' : ''}</div>`}
+              <div style="font-size:11px;color:#666;">${result.airline}</div>
+              ${depDate ? `<div style="font-size:11px;color:#888;margin-top:2px;">${depDate}${retDate ? ' → ' + retDate : ''}</div>` : ''}
+              ${result.stops === 0 ? '<div style="font-size:10px;color:#34d399;margin-top:2px;">Nonstop</div>' : `<div style="font-size:10px;color:#888;margin-top:2px;">${result.stops} stop${result.stops !== 1 ? 's' : ''}</div>`}
             </div>
           `, { maxWidth: 220 });
       }
@@ -112,8 +116,8 @@ export default function MapInner({ results, origin }: Props) {
           html: `<div style="
             width:14px;height:14px;border-radius:50%;
             background:#fff;
-            border:3px solid #14b8a6;
-            box-shadow:0 0 0 3px rgba(20,184,166,0.3),0 2px 8px rgba(0,0,0,0.5);
+            border:3px solid #ffffff;
+            box-shadow:0 0 0 3px rgba(0,0,0,0.2),0 2px 8px rgba(0,0,0,0.5);
           "></div>`,
           iconSize: [14, 14],
           iconAnchor: [7, 7],
@@ -129,11 +133,25 @@ export default function MapInner({ results, origin }: Props) {
       } else if (destPoints.length === 1) {
         map.setView(destPoints[0], 6);
       }
+
+      // Watch for theme changes and swap tile layer
+      const observer = new MutationObserver(() => {
+        const dark = document.documentElement.classList.contains('dark');
+        if (tileLayerRef.current) {
+          (tileLayerRef.current as { setUrl: (url: string) => void }).setUrl(dark ? TILE_DARK : TILE_LIGHT);
+        }
+      });
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+      const cleanup = () => observer.disconnect();
+      (mapInstanceRef.current as { _themeObserverCleanup?: () => void })._themeObserverCleanup = cleanup;
     });
 
     return () => {
       if (mapInstanceRef.current) {
-        (mapInstanceRef.current as { remove: () => void }).remove();
+        const inst = mapInstanceRef.current as { remove: () => void; _themeObserverCleanup?: () => void };
+        inst._themeObserverCleanup?.();
+        inst.remove();
         mapInstanceRef.current = null;
       }
     };
@@ -141,13 +159,13 @@ export default function MapInner({ results, origin }: Props) {
   }, []);
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-white/10" style={{ background: '#1a1a2e' }}>
+    <div className="rounded-2xl overflow-hidden border border-black/10 dark:border-white/10 bg-[#f5f5f5] dark:bg-[#0a0a0a]">
       <div ref={mapRef} className="h-72 w-full" />
-      <div className="flex items-center gap-4 px-4 py-2 border-t border-white/10 text-xs text-white/40">
-        <span className="flex items-center gap-1.5"><span style={{ background: '#10b981', borderRadius: '50%', display: 'inline-block', width: 8, height: 8 }} /> Great deal</span>
-        <span className="flex items-center gap-1.5"><span style={{ background: '#14b8a6', borderRadius: '50%', display: 'inline-block', width: 8, height: 8 }} /> Good</span>
-        <span className="flex items-center gap-1.5"><span style={{ background: '#f59e0b', borderRadius: '50%', display: 'inline-block', width: 8, height: 8 }} /> Fair</span>
-        <span className="flex items-center gap-1.5"><span style={{ background: '#ef4444', borderRadius: '50%', display: 'inline-block', width: 8, height: 8 }} /> High</span>
+      <div className="flex items-center gap-4 px-4 py-2 border-t border-black/10 dark:border-white/10 text-xs text-black/40 dark:text-white/40">
+        <span className="flex items-center gap-1.5"><span style={{ background: '#34d399', borderRadius: '50%', display: 'inline-block', width: 8, height: 8 }} /> Great deal</span>
+        <span className="flex items-center gap-1.5"><span style={{ background: '#a3a3a3', borderRadius: '50%', display: 'inline-block', width: 8, height: 8 }} /> Good</span>
+        <span className="flex items-center gap-1.5"><span style={{ background: '#d97706', borderRadius: '50%', display: 'inline-block', width: 8, height: 8 }} /> Fair</span>
+        <span className="flex items-center gap-1.5"><span style={{ background: '#dc2626', borderRadius: '50%', display: 'inline-block', width: 8, height: 8 }} /> High</span>
       </div>
     </div>
   );

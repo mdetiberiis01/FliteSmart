@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,8 +23,17 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         />
+        <script dangerouslySetInnerHTML={{ __html: `
+          try {
+            if (localStorage.getItem('theme') === 'dark')
+              document.documentElement.classList.add('dark');
+          } catch(e) {}
+        `}} />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <ThemeToggle />
+        {children}
+      </body>
     </html>
   );
 }

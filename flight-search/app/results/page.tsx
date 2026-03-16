@@ -65,36 +65,39 @@ function ResultsContent() {
   const flexLabel =
     {
       anytime: 'Anytime',
-      spring: 'Spring 🌸',
-      summer: 'Summer ☀️',
-      fall: 'Fall 🍂',
-      winter: 'Winter ❄️',
+      spring: 'Spring',
+      summer: 'Summer',
+      fall: 'Fall',
+      winter: 'Winter',
       custom: 'Custom dates',
     }[flexibility] || flexibility;
 
   return (
     <main className="min-h-screen">
       {/* Top bar */}
-      <div className="border-b border-white/10 glass-card sticky top-0 z-30">
+      <div className="border-b border-black/10 dark:border-white/10 glass-card sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <button
             onClick={() => router.push('/')}
-            className="text-white/60 hover:text-white transition text-sm flex items-center gap-2"
+            className="text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition text-sm flex items-center gap-2"
           >
             ← Back
           </button>
           <div className="text-center">
-            <span className="text-white font-semibold">
-              {originName} → {destination}
-            </span>
-            <span className="text-white/50 text-sm ml-2">{flexLabel}</span>
+            <div>
+              <span className="text-black dark:text-white font-semibold">
+                {originName} → {destination}
+              </span>
+              <span className="text-black/50 dark:text-white/50 text-sm ml-2">{flexLabel}</span>
+            </div>
+            <button
+              onClick={() => setShowMap(!showMap)}
+              className="text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition text-xs mt-1"
+            >
+              {showMap ? 'Hide map' : 'Show map'}
+            </button>
           </div>
-          <button
-            onClick={() => setShowMap(!showMap)}
-            className="text-white/60 hover:text-white transition text-sm"
-          >
-            {showMap ? 'Hide map' : 'Show map'}
-          </button>
+          <div className="w-16" />
         </div>
       </div>
 
@@ -117,21 +120,21 @@ function ResultsContent() {
             animate={{ opacity: 1 }}
             className="mb-6"
           >
-            <h2 className="text-white text-2xl font-bold">
+            <h2 className="text-black dark:text-white text-2xl font-bold">
               {results.length > 0
                 ? `${results.length} flight${results.length !== 1 ? 's' : ''} found`
                 : 'Searching...'}
             </h2>
             <div className="flex flex-wrap items-center gap-2 mt-2">
-              <span className="text-white/50 text-sm">From {originName}</span>
-              <span className="text-white/20">·</span>
-              <span className="text-white/50 text-sm">{flexLabel}</span>
-              <span className="text-white/20">·</span>
-              <span className="glass-card border border-teal-500/30 text-teal-400 text-xs font-medium px-2.5 py-1 rounded-full">
+              <span className="text-black/50 dark:text-white/50 text-sm">From {originName}</span>
+              <span className="text-black/20 dark:text-white/20">·</span>
+              <span className="text-black/50 dark:text-white/50 text-sm">{flexLabel}</span>
+              <span className="text-black/20 dark:text-white/20">·</span>
+              <span className="glass-card border border-black/20 dark:border-white/20 text-black/70 dark:text-white/70 text-xs font-medium px-2.5 py-1 rounded-full">
                 {tripDays} day{tripDays !== 1 ? 's' : ''}
               </span>
-              <span className="text-white/20">·</span>
-              <span className="text-white/50 text-sm">Prices per person roundtrip</span>
+              <span className="text-black/20 dark:text-white/20">·</span>
+              <span className="text-black/50 dark:text-white/50 text-sm">Prices per person roundtrip</span>
             </div>
           </motion.div>
         )}
@@ -157,7 +160,7 @@ export default function ResultsPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center">
-          <div className="text-white/60 text-lg">Loading...</div>
+          <div className="text-black/60 dark:text-white/60 text-lg">Loading...</div>
         </div>
       }
     >
