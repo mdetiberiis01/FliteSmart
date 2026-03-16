@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS price_snapshots (
   currency      CHAR(3) NOT NULL DEFAULT 'USD',
   source        TEXT NOT NULL,
   searched_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CONSTRAINT uq_snapshot UNIQUE (origin, destination, travel_month, source, (searched_at::date))
+  CONSTRAINT uq_snapshot UNIQUE (origin, destination, travel_month, source)
 );
 
 -- price_summary: materialized cheapest per route/month

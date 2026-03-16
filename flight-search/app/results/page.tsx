@@ -17,7 +17,6 @@ function ResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [isDemo, setIsDemo] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
@@ -55,9 +54,7 @@ function ResultsContent() {
         if (data.error) {
           setError(data.error);
         } else {
-          const r = data.results || [];
-          setResults(r);
-          setIsDemo(r.length > 0 && r[0].dataSource === 'demo');
+          setResults(data.results || []);
         }
       })
       .catch(() => setError('Search failed. Please check your connection.'))
@@ -148,21 +145,6 @@ function ResultsContent() {
           </div>
         )}
 
-        {isDemo && !isLoading && (
-          <div className="glass-card border border-amber-500/30 rounded-xl px-5 py-4 mb-6 flex items-start gap-3">
-            <span className="text-amber-400 text-lg shrink-0">⚠️</span>
-            <div>
-              <p className="text-amber-400 font-medium text-sm">Demo mode — prices are illustrative</p>
-              <p className="text-white/50 text-xs mt-0.5">
-                These are sample flights to show the UI. Add your{' '}
-                <code className="text-white/70 bg-white/10 px-1 rounded">AMADEUS_CLIENT_ID</code> and{' '}
-                <code className="text-white/70 bg-white/10 px-1 rounded">AMADEUS_CLIENT_SECRET</code>{' '}
-                to <code className="text-white/70 bg-white/10 px-1 rounded">.env.local</code> for real prices.
-                Kayak links still open the correct route and dates.
-              </p>
-            </div>
-          </div>
-        )}
 
         <ResultsGrid results={results} isLoading={isLoading} />
       </div>

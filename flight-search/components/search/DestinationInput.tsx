@@ -65,7 +65,7 @@ export function DestinationInput({ value, onChange }: Props) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-50 w-full mt-2 glass-card rounded-xl overflow-hidden border border-white/20 shadow-2xl max-h-80 overflow-y-auto"
+            className="absolute z-50 w-full mt-2 rounded-xl overflow-hidden border border-white/20 shadow-2xl max-h-80 overflow-y-auto" style={{ background: 'rgba(15, 20, 35, 0.97)', backdropFilter: 'blur(20px)' }}
           >
             {/* Quick picks when empty */}
             {showQuickPicks && (

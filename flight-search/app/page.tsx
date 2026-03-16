@@ -5,8 +5,7 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center justify-center px-4 py-16">
       {/* Hero */}
       <div className="text-center mb-12">
-        <div className="text-6xl mb-4">✈️</div>
-        <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight">
+<h1 className="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight">
           Find your next{' '}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-600">
             adventure

@@ -11,6 +11,40 @@ const SEASONS = {
   winter: [12, 1, 2],  // December, January, February
 };
 
+/**
+ * Generates weekly departure dates (Tuesdays) across the full flexibility window.
+ * Tuesdays are typically the cheapest day to fly.
+ */
+export function generateSearchDates(
+  flexibility: string,
+  customDateStart?: string,
+  customDateEnd?: string,
+  intervalDays = 7
+): string[] {
+  const ranges = getDateRanges(flexibility, customDateStart, customDateEnd);
+  if (!ranges.length) return [];
+
+  const rangeStart = new Date(ranges[0].start + 'T00:00:00');
+  const rangeEnd = new Date(ranges[ranges.length - 1].end + 'T00:00:00');
+
+  // Must be at least 3 days out
+  const earliest = new Date();
+  earliest.setDate(earliest.getDate() + 3);
+  const start = new Date(Math.max(rangeStart.getTime(), earliest.getTime()));
+
+  // Snap forward to nearest Tuesday (day 2)
+  const daysUntilTue = (2 - start.getDay() + 7) % 7;
+  start.setDate(start.getDate() + (daysUntilTue === 0 ? 7 : daysUntilTue));
+
+  const dates: string[] = [];
+  const cur = new Date(start);
+  while (cur <= rangeEnd) {
+    dates.push(cur.toISOString().split('T')[0]);
+    cur.setDate(cur.getDate() + intervalDays);
+  }
+  return dates;
+}
+
 export function getDateRanges(
   flexibility: string,
   customStart?: string,

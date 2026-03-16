@@ -57,7 +57,7 @@ export async function savePriceSnapshots(
   }));
 
   await supabaseAdmin.from('price_snapshots').upsert(rows, {
-    onConflict: 'origin,destination,travel_month,source,searched_at',
+    onConflict: 'origin,destination,travel_month,source',
     ignoreDuplicates: true,
   });
 }
@@ -99,12 +99,12 @@ export async function checkSerpApiBudget(): Promise<{ used: number; canCall: boo
   const now = new Date();
   const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-  const { data } = await supabaseAdmin
+  const { count } = await supabaseAdmin
     .from('serpapi_call_log')
-    .select('id', { count: 'exact' })
+    .select('*', { count: 'exact', head: true })
     .eq('month_key', monthKey);
 
-  const used = (data as unknown as { count: number } | null)?.count ?? 0;
+  const used = count ?? 0;
   return { used, canCall: used < 90 };
 }
 

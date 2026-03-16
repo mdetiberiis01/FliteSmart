@@ -60,7 +60,7 @@ export function OriginInput({ value, displayName, onChange }: Props) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-50 w-full mt-2 glass-card rounded-xl overflow-hidden border border-white/20 shadow-2xl max-h-72 overflow-y-auto"
+            className="absolute z-50 w-full mt-2 rounded-xl overflow-hidden border border-white/20 shadow-2xl max-h-72 overflow-y-auto" style={{ background: 'rgba(15, 20, 35, 0.97)', backdropFilter: 'blur(20px)' }}
           >
             {isLoading ? (
               <div className="px-4 py-3 text-white/50 text-sm flex items-center gap-2">

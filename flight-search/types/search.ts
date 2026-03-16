@@ -29,6 +29,7 @@ export interface SearchResult {
   stops: number;
   duration: string;
   bookingUrl?: string;
+  bookingToken?: string;
   historicalLow: number | null;
   avg12m: number | null;
   dealRating: 'great' | 'good' | 'fair' | 'above-average' | 'unknown';

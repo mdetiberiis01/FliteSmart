@@ -21,29 +21,16 @@ function formatDate(dateStr: string): string {
   });
 }
 
-function buildBookingUrl(result: SearchResult): string {
-  // Use stored bookingUrl if the real API provided one
-  if (result.bookingUrl) return result.bookingUrl;
-
-  // Kayak deep link: kayak.com/flights/{ORIGIN}-{DEST}/{dep}/{ret}
-  // No filters — they can cause Kayak to drop the route/date pre-fill
-  const dep = result.departureDate;
-  const ret = result.returnDate;
-  const route = `${result.origin}-${result.destination}`;
-
-  let url = `https://www.kayak.com/flights/${route}/${dep}`;
-  if (ret) url += `/${ret}`;
-  return url;
-}
-
 export function FlightCard({ result, index }: Props) {
   const stops =
     result.stops === 0 ? 'Nonstop' : result.stops === 1 ? '1 stop' : `${result.stops} stops`;
 
-  const bookingUrl = buildBookingUrl(result);
-
   function handleClick() {
-    window.open(bookingUrl, '_blank', 'noopener,noreferrer');
+    const url = result.bookingUrl
+      ?? `https://www.google.com/travel/flights?q=${encodeURIComponent(
+          `flights from ${result.origin} to ${result.destination} on ${result.departureDate}`
+        )}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   return (
@@ -52,7 +39,7 @@ export function FlightCard({ result, index }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.07 }}
       onClick={handleClick}
-      className="glass-card rounded-2xl p-5 border border-white/10 hover:border-teal-500/40 transition-all hover:shadow-lg hover:shadow-teal-500/10 cursor-pointer group"
+      className="glass-card rounded-2xl p-5 border border-white/10 hover:border-teal-500/40 transition-all hover:shadow-lg hover:shadow-teal-500/10 group cursor-pointer"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
@@ -81,7 +68,7 @@ export function FlightCard({ result, index }: Props) {
         <span>{result.destination}</span>
       </div>
 
-      {/* Dates — prominent */}
+      {/* Dates */}
       {result.departureDate && (
         <div className="flex items-center gap-2 mb-3">
           <div className="flex-1 glass-card border border-white/10 rounded-lg px-3 py-2 text-center">
@@ -116,10 +103,12 @@ export function FlightCard({ result, index }: Props) {
       {/* Sparkline */}
       <PriceSparkline data={result.priceHistory} currentPrice={result.price} />
 
-      {/* Book CTA */}
+      {/* CTA */}
       <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">
-        <span className="text-xs text-white/30">Opens Kayak</span>
-        <span className="text-xs text-teal-400 font-medium group-hover:text-teal-300 transition-colors flex items-center gap-1">
+        <span className="text-xs text-white/30">
+          {result.bookingUrl ? 'kiwi.com' : 'Google Flights'}
+        </span>
+        <span className="text-xs text-teal-400 font-medium group-hover:text-teal-300 transition-colors">
           Book now →
         </span>
       </div>

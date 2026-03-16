@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { searchLocations } from '@/lib/amadeus/locations';
 import { REGIONS } from '@/lib/geo/region-map';
 
 export interface AutocompleteResult {
@@ -132,7 +131,7 @@ function matchingRegions(q: string): AutocompleteResult[] {
   return matches;
 }
 
-export async function GET(request: NextRequest) {
+export function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get('q');
   const type = request.nextUrl.searchParams.get('type') || 'origin';
 
@@ -147,30 +146,7 @@ export async function GET(request: NextRequest) {
     results.push(...matchingRegions(q));
   }
 
-  // Try Amadeus first
-  let amadeusResults: AutocompleteResult[] = [];
-  try {
-    const locations = await searchLocations(q);
-    amadeusResults = locations.map((loc) => ({
-      iataCode: loc.iataCode,
-      name: loc.name,
-      cityName: loc.address?.cityName || '',
-      countryName: loc.address?.countryName || '',
-      detailedName: loc.detailedName,
-      subType: loc.subType,
-      category: (loc.subType === 'AIRPORT' ? 'airport' : 'city') as 'airport' | 'city',
-      score: loc.analytics?.travelers?.score || 0,
-    }));
-  } catch {
-    // Amadeus unavailable — fall through to static data
-  }
-
-  // Use Amadeus results if available, otherwise fall back to static list
-  if (amadeusResults.length > 0) {
-    results.push(...amadeusResults);
-  } else {
-    results.push(...searchStaticAirports(q));
-  }
+  results.push(...searchStaticAirports(q));
 
   return NextResponse.json(results);
 }
