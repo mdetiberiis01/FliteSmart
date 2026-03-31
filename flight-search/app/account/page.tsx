@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getUser, signOut } from '@/lib/supabase/auth';
-import { getUserAlerts, deactivateAlert, UserAlert } from '@/lib/supabase/user-alerts';
+import { getUser } from '@/lib/supabase/auth';
+import { getUserAlerts, deactivateAlert, deleteAlert, reactivateAlert, UserAlert } from '@/lib/supabase/user-alerts';
+import { Nav } from '@/components/ui/Nav';
 import type { User } from '@supabase/supabase-js';
 
 export default function AccountPage() {
@@ -39,9 +40,16 @@ export default function AccountPage() {
     );
   }
 
-  async function handleSignOut() {
-    await signOut();
-    router.push('/');
+  async function handleDelete(id: string) {
+    await deleteAlert(id);
+    setAlerts((prev) => prev.filter((a) => a.id !== id));
+  }
+
+  async function handleReactivate(id: string) {
+    await reactivateAlert(id);
+    setAlerts((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, is_active: true } : a)),
+    );
   }
 
   const name = user?.user_metadata?.full_name as string | undefined;
@@ -49,34 +57,7 @@ export default function AccountPage() {
   return (
     <div className="min-h-screen flex flex-col">
 
-      {/* Nav */}
-      <header className="relative z-10 border-b border-black/8 dark:border-white/10 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between pr-24">
-          <div className="flex items-center gap-10">
-            <Link href="/" className="font-bold text-lg tracking-tight text-black dark:text-white">
-              ✈ FliteSmart
-            </Link>
-            <nav className="hidden md:flex items-center gap-7 text-sm text-black/55 dark:text-white/55">
-              <Link href="/" className="hover:text-black dark:hover:text-white transition">Flights</Link>
-              <Link href="/alerts" className="hover:text-black dark:hover:text-white transition">Price Alerts</Link>
-              <Link href="/how-it-works" className="hover:text-black dark:hover:text-white transition">How it works</Link>
-            </nav>
-          </div>
-          <div className="hidden md:flex items-center gap-3 text-sm">
-            {user && (
-              <span className="text-black/60 dark:text-white/60 text-sm">
-                {name || user.email}
-              </span>
-            )}
-            <button
-              onClick={handleSignOut}
-              className="px-4 py-1.5 rounded-full bg-black dark:bg-white text-white dark:text-black text-sm font-medium hover:bg-black/80 dark:hover:bg-white/80 transition"
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
+      <Nav />
 
       {/* Content */}
       <section className="bg-gradient-to-b from-sky-50 via-sky-50/40 to-white dark:from-slate-900 dark:via-slate-900/40 dark:to-[#0a0a0a] pt-16 pb-24 px-4 flex-1">
@@ -127,7 +108,14 @@ export default function AccountPage() {
                         {alert.origin_name || alert.origin} → {alert.destination}
                       </div>
                       <div className="text-black/45 dark:text-white/45 text-xs mt-0.5">
-                        Max ${alert.max_price} · Added {new Date(alert.created_at).toLocaleDateString()}
+                        Max ${alert.max_price}
+                        {alert.flexibility && alert.flexibility !== 'anytime' && (
+                          <> · {alert.flexibility.charAt(0).toUpperCase() + alert.flexibility.slice(1)}</>
+                        )}
+                        {alert.trip_days && (
+                          <> · {alert.trip_days}d trip</>
+                        )}
+                        {' · '}Added {new Date(alert.created_at).toLocaleDateString()}
                         {alert.last_alerted_at && (
                           <> · Last alerted {new Date(alert.last_alerted_at).toLocaleDateString()}</>
                         )}
@@ -143,14 +131,33 @@ export default function AccountPage() {
                           Paused
                         </span>
                       )}
-                      {alert.is_active && (
+                      <Link
+                        href={`/account/edit-alert/${alert.id}`}
+                        className="text-xs text-black/35 dark:text-white/35 hover:text-black/60 dark:hover:text-white/60 transition"
+                      >
+                        Edit
+                      </Link>
+                      {alert.is_active ? (
                         <button
                           onClick={() => handleDeactivate(alert.id)}
                           className="text-xs text-black/35 dark:text-white/35 hover:text-black/60 dark:hover:text-white/60 transition"
                         >
                           Pause
                         </button>
+                      ) : (
+                        <button
+                          onClick={() => handleReactivate(alert.id)}
+                          className="text-xs text-black/35 dark:text-white/35 hover:text-black/60 dark:hover:text-white/60 transition"
+                        >
+                          Reactivate
+                        </button>
                       )}
+                      <button
+                        onClick={() => handleDelete(alert.id)}
+                        className="text-xs text-red-400/60 hover:text-red-500 transition"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 ))

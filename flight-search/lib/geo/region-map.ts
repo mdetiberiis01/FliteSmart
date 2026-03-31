@@ -5,80 +5,96 @@ export interface RegionInfo {
 }
 
 export const REGIONS: Record<string, RegionInfo> = {
+  // Airports are ordered so the first 6 span different countries for search diversity.
   'southeast asia': {
     label: 'Southeast Asia',
     countries: ['TH', 'VN', 'ID', 'MY', 'SG', 'PH', 'KH', 'LA', 'MM', 'BN'],
-    airports: ['BKK', 'SIN', 'KUL', 'CGK', 'MNL', 'SGN', 'HAN', 'DPS', 'DAD', 'HKT', 'CNX', 'PEN', 'CEB', 'REP', 'PNH', 'RGN', 'VTE'],
+    // TH, SG, MY, ID, PH, VN — one per country, then secondaries
+    airports: ['BKK', 'SIN', 'KUL', 'CGK', 'MNL', 'SGN', 'DPS', 'HAN', 'DAD', 'HKT', 'CNX', 'PEN', 'CEB', 'REP', 'PNH', 'RGN', 'VTE'],
   },
   'east asia': {
     label: 'East Asia',
     countries: ['JP', 'KR', 'CN', 'TW', 'HK', 'MO'],
-    airports: ['NRT', 'HND', 'KIX', 'NGO', 'ICN', 'GMP', 'PVG', 'PEK', 'CAN', 'CTU', 'SZX', 'HKG', 'TPE', 'KHH', 'MFM'],
+    // JP, KR, CN (Shanghai), HK, TW, CN (Beijing) — one per country/territory first
+    airports: ['NRT', 'ICN', 'PVG', 'HKG', 'TPE', 'PEK', 'HND', 'KIX', 'GMP', 'NGO', 'CAN', 'CTU', 'SZX', 'KHH', 'MFM'],
   },
   europe: {
     label: 'Europe',
     countries: ['GB', 'FR', 'DE', 'ES', 'IT', 'NL', 'PT', 'GR', 'CH', 'AT', 'BE', 'SE', 'NO', 'DK', 'FI', 'PL', 'CZ', 'HU', 'IE', 'HR', 'RO', 'BG'],
-    airports: ['LHR', 'CDG', 'FRA', 'MAD', 'FCO', 'AMS', 'BCN', 'MUC', 'LIS', 'ATH', 'MXP', 'ZRH', 'VIE', 'BRU', 'ARN', 'CPH', 'OSL', 'HEL', 'DUB', 'BER', 'WAW', 'PRG', 'BUD', 'OPO', 'NAP', 'EDI', 'NCE', 'BIO', 'LYS'],
+    // UK, FR, DE, ES, IT, NL — already diverse
+    airports: ['LHR', 'CDG', 'FRA', 'MAD', 'FCO', 'AMS', 'LIS', 'ATH', 'VIE', 'DUB', 'ARN', 'CPH', 'BCN', 'MUC', 'ZRH', 'BRU', 'OSL', 'HEL', 'BER', 'WAW', 'PRG', 'BUD', 'OPO', 'NAP', 'EDI', 'NCE', 'BIO', 'LYS', 'MXP'],
   },
   'western europe': {
     label: 'Western Europe',
     countries: ['GB', 'FR', 'DE', 'ES', 'IT', 'NL', 'PT', 'BE', 'CH', 'AT', 'IE'],
-    airports: ['LHR', 'CDG', 'FRA', 'MAD', 'FCO', 'AMS', 'BCN', 'MUC', 'LIS', 'MXP', 'ZRH', 'VIE', 'BRU', 'DUB', 'OPO', 'NAP'],
+    // UK, FR, DE, ES, IT, NL — all different
+    airports: ['LHR', 'CDG', 'FRA', 'MAD', 'FCO', 'AMS', 'LIS', 'VIE', 'DUB', 'BRU', 'BCN', 'MUC', 'ZRH', 'OPO', 'NAP', 'MXP'],
   },
   'eastern europe': {
     label: 'Eastern Europe',
     countries: ['PL', 'CZ', 'HU', 'RO', 'BG', 'SK', 'HR', 'RS', 'UA', 'GR'],
+    // PL, CZ, HU, RO, BG, HR — all different
     airports: ['WAW', 'PRG', 'BUD', 'OTP', 'SOF', 'ZAG', 'BEG', 'KBP', 'ATH', 'SKG'],
   },
   'scandinavia': {
     label: 'Scandinavia',
     countries: ['SE', 'NO', 'DK', 'FI', 'IS'],
-    airports: ['ARN', 'CPH', 'OSL', 'HEL', 'GOT', 'BGO', 'REK'],
+    // SE, DK, NO, FI, IS — all different
+    airports: ['ARN', 'CPH', 'OSL', 'HEL', 'REK', 'GOT', 'BGO'],
   },
   'latin america': {
     label: 'Latin America',
     countries: ['MX', 'CO', 'BR', 'AR', 'PE', 'CL', 'CR', 'PA', 'EC', 'UY', 'PY', 'BO'],
-    airports: ['MEX', 'CUN', 'BOG', 'MDE', 'GRU', 'GIG', 'EZE', 'COR', 'LIM', 'SCL', 'SJO', 'PTY', 'UIO', 'GYE', 'MVD', 'ASU', 'VVI', 'GDL', 'MTY'],
+    // MX, CO, BR, AR, PE, CL — one per country
+    airports: ['MEX', 'BOG', 'GRU', 'EZE', 'LIM', 'SCL', 'SJO', 'PTY', 'UIO', 'MVD', 'CUN', 'MDE', 'GIG', 'GYE', 'ASU', 'VVI', 'GDL', 'MTY', 'COR'],
   },
   'south america': {
     label: 'South America',
     countries: ['BR', 'AR', 'PE', 'CL', 'CO', 'VE', 'EC', 'BO', 'UY', 'PY'],
-    airports: ['GRU', 'GIG', 'EZE', 'COR', 'LIM', 'SCL', 'BOG', 'MDE', 'UIO', 'GYE', 'MVD', 'ASU', 'VVI', 'CCS', 'SSA', 'REC'],
+    // BR, AR, PE, CO, CL, EC — one per country
+    airports: ['GRU', 'EZE', 'LIM', 'BOG', 'SCL', 'UIO', 'MVD', 'CCS', 'ASU', 'VVI', 'GIG', 'MDE', 'GYE', 'COR', 'SSA', 'REC'],
   },
   'caribbean': {
     label: 'Caribbean',
     countries: ['CU', 'JM', 'DO', 'PR', 'BB', 'TT', 'LC', 'VC', 'AG', 'KN', 'GD', 'DM'],
-    airports: ['MBJ', 'KIN', 'SDQ', 'PUJ', 'SJU', 'NAS', 'BGI', 'POS', 'ANU', 'SXM', 'CUR', 'AUA', 'HAV', 'SLU', 'GND', 'PTP', 'FDF'],
+    // JM, DO, PR, BS, CU, BB — one per island/territory
+    airports: ['MBJ', 'SDQ', 'SJU', 'NAS', 'HAV', 'BGI', 'AUA', 'POS', 'PUJ', 'SXM', 'CUR', 'ANU', 'SLU', 'GND', 'PTP', 'FDF', 'KIN'],
   },
   'middle east': {
     label: 'Middle East',
     countries: ['AE', 'SA', 'QA', 'KW', 'BH', 'OM', 'JO', 'IL', 'LB', 'TR'],
-    airports: ['DXB', 'AUH', 'DOH', 'RUH', 'JED', 'KWI', 'BAH', 'MCT', 'AMM', 'TLV', 'BEY', 'IST', 'SAW', 'ESB'],
+    // AE, QA, TR, SA, IL, OM — one per country
+    airports: ['DXB', 'DOH', 'IST', 'RUH', 'TLV', 'MCT', 'AMM', 'KWI', 'AUH', 'BAH', 'BEY', 'JED', 'SAW', 'ESB'],
   },
   africa: {
     label: 'Africa',
     countries: ['ZA', 'EG', 'NG', 'KE', 'MA', 'TZ', 'ET', 'GH', 'SN', 'CI', 'MU', 'UG', 'RW', 'ZM', 'ZW'],
-    airports: ['JNB', 'CPT', 'CAI', 'LOS', 'ABV', 'NBO', 'MBA', 'CMN', 'RAK', 'DAR', 'ADD', 'ACC', 'ABJ', 'DKR', 'MRU', 'EBB', 'KGL', 'LUN', 'HRE'],
+    // ZA, EG, KE, NG, ET, MA — one per country
+    airports: ['JNB', 'CAI', 'NBO', 'LOS', 'ADD', 'CMN', 'ACC', 'DKR', 'DAR', 'MRU', 'EBB', 'KGL', 'CPT', 'ABV', 'RAK', 'ABJ', 'LUN', 'HRE'],
   },
   oceania: {
     label: 'Oceania',
     countries: ['AU', 'NZ', 'FJ', 'PG', 'WS', 'TO', 'VU'],
-    airports: ['SYD', 'MEL', 'BNE', 'PER', 'ADL', 'OOL', 'AKL', 'WLG', 'CHC', 'NAN', 'POM', 'APW'],
+    // AU, NZ, FJ, PG — one per country
+    airports: ['SYD', 'AKL', 'NAN', 'POM', 'MEL', 'CHC', 'BNE', 'PER', 'ADL', 'OOL', 'WLG', 'APW'],
   },
   'south asia': {
     label: 'South Asia',
     countries: ['IN', 'PK', 'BD', 'LK', 'NP', 'AF', 'MV'],
-    airports: ['DEL', 'BOM', 'BLR', 'MAA', 'HYD', 'CCU', 'AMD', 'GOI', 'COK', 'ISB', 'LHE', 'KHI', 'DAC', 'CMB', 'KTM', 'MLE'],
+    // IN, LK, PK, NP, MV, BD — one per country
+    airports: ['DEL', 'CMB', 'ISB', 'KTM', 'MLE', 'DAC', 'BOM', 'BLR', 'MAA', 'HYD', 'CCU', 'AMD', 'GOI', 'COK', 'LHE', 'KHI'],
   },
   'central asia': {
     label: 'Central Asia',
     countries: ['KZ', 'UZ', 'KG', 'TJ', 'TM'],
-    airports: ['ALA', 'NQZ', 'TAS', 'OSS', 'FRU', 'DYU', 'ASB'],
+    // UZ, KZ, KG, TJ, TM — one per country
+    airports: ['TAS', 'ALA', 'FRU', 'DYU', 'ASB', 'NQZ', 'OSS'],
   },
   'north africa': {
     label: 'North Africa',
     countries: ['EG', 'MA', 'TN', 'DZ', 'LY'],
-    airports: ['CAI', 'HRG', 'SSH', 'CMN', 'RAK', 'TUN', 'ALG', 'ORN'],
+    // EG, MA, TN, DZ — one per country
+    airports: ['CAI', 'CMN', 'TUN', 'ALG', 'HRG', 'RAK', 'SSH', 'ORN'],
   },
 };
 

@@ -27,6 +27,7 @@ export interface SearchResult {
   airline: string;
   airlineCode: string;
   stops: number;
+  layovers?: string[]; // IATA codes of intermediate airports, e.g. ["CDG", "AMS"]
   duration: string;
   bookingUrl?: string;
   bookingToken?: string;

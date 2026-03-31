@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Nav } from '@/components/ui/Nav';
 
 const SECTIONS = [
   {
@@ -27,27 +28,7 @@ export default function HowItWorksPage() {
   return (
     <div className="min-h-screen flex flex-col">
 
-      {/* Nav */}
-      <header className="relative z-10 border-b border-black/8 dark:border-white/10 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between pr-24">
-          <div className="flex items-center gap-10">
-            <Link href="/" className="font-bold text-lg tracking-tight text-black dark:text-white">
-              ✈ FliteSmart
-            </Link>
-            <nav className="hidden md:flex items-center gap-7 text-sm text-black/55 dark:text-white/55">
-              <Link href="/" className="hover:text-black dark:hover:text-white transition">Flights</Link>
-              <Link href="/alerts" className="hover:text-black dark:hover:text-white transition">Price Alerts</Link>
-              <Link href="/how-it-works" className="text-black dark:text-white">How it works</Link>
-            </nav>
-          </div>
-          <div className="hidden md:flex items-center gap-3 text-sm">
-            <Link href="/login" className="text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white transition">Sign in</Link>
-            <Link href="/alerts" className="px-4 py-1.5 rounded-full bg-black dark:bg-white text-white dark:text-black text-sm font-medium hover:bg-black/80 dark:hover:bg-white/80 transition">
-              Sign up
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Nav activePage="how-it-works" />
 
       {/* Hero */}
       <section className="bg-gradient-to-b from-sky-50 via-sky-50/40 to-white dark:from-slate-900 dark:via-slate-900/40 dark:to-[#0a0a0a] pt-16 pb-20 px-6">

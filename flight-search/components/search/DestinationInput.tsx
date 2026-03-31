@@ -5,12 +5,12 @@ import { useAutocomplete } from '@/hooks/useAutocomplete';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const QUICK_OPTIONS = [
-  { label: 'Anywhere', value: 'anywhere', emoji: '🌍' },
-  { label: 'Southeast Asia', value: 'Southeast Asia', emoji: '🌏' },
-  { label: 'Europe', value: 'Europe', emoji: '🗼' },
-  { label: 'East Asia', value: 'East Asia', emoji: '🗾' },
-  { label: 'Caribbean', value: 'Caribbean', emoji: '🌴' },
-  { label: 'South America', value: 'South America', emoji: '🏔️' },
+  { label: 'Anywhere', value: 'anywhere' },
+  { label: 'Southeast Asia', value: 'Southeast Asia' },
+  { label: 'Europe', value: 'Europe' },
+  { label: 'East Asia', value: 'East Asia' },
+  { label: 'Caribbean', value: 'Caribbean' },
+  { label: 'South America', value: 'South America' },
 ];
 
 interface Props {
@@ -42,7 +42,7 @@ export function DestinationInput({ value, onChange }: Props) {
 
   return (
     <div ref={ref} className="relative">
-      <label className="block text-sm text-white/60 mb-1">To</label>
+      <label className="block text-sm text-black/60 dark:text-white/60 mb-1">To</label>
       <input
         type="text"
         value={displayValue}
@@ -55,7 +55,7 @@ export function DestinationInput({ value, onChange }: Props) {
           setOpen(true);
         }}
         placeholder="City, country, region, or anywhere..."
-        className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
+        className="w-full bg-black/5 dark:bg-white/10 border border-black/20 dark:border-white/20 rounded-xl px-4 py-3 text-black dark:text-white placeholder-black/40 dark:placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-black/30 dark:focus:ring-white/40 focus:border-transparent transition"
       />
 
       <AnimatePresence>
@@ -65,12 +65,12 @@ export function DestinationInput({ value, onChange }: Props) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-50 w-full mt-2 rounded-xl overflow-hidden border border-white/20 shadow-2xl max-h-80 overflow-y-auto" style={{ background: 'rgba(15, 20, 35, 0.97)', backdropFilter: 'blur(20px)' }}
+            className="dropdown-surface absolute z-50 w-full mt-2 rounded-xl overflow-hidden border border-black/15 dark:border-white/20 shadow-2xl max-h-80 overflow-y-auto" style={{ backdropFilter: 'blur(20px)' }}
           >
             {/* Quick picks when empty */}
             {showQuickPicks && (
               <>
-                <div className="px-4 py-2 text-xs text-white/40 uppercase tracking-wider font-medium">
+                <div className="px-4 py-2 text-xs text-black/40 dark:text-white/40 uppercase tracking-wider font-medium">
                   Popular destinations
                 </div>
                 {QUICK_OPTIONS.map((opt) => (
@@ -81,11 +81,10 @@ export function DestinationInput({ value, onChange }: Props) {
                       onChange(opt.value);
                       setOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 hover:bg-white/10 active:bg-white/15 transition flex items-center gap-3 border-b border-white/5 last:border-0"
+                    className="w-full text-left px-4 py-2.5 hover:bg-black/5 dark:hover:bg-white/10 active:bg-black/10 dark:active:bg-white/15 transition flex items-center gap-3 border-b border-black/5 dark:border-white/5 last:border-0"
                   >
-                    <span className="text-lg w-7 shrink-0">{opt.emoji}</span>
-                    <span className="text-white text-sm">{opt.label}</span>
-                    <span className="ml-auto text-xs text-white/30 bg-white/5 px-2 py-0.5 rounded-full">Region</span>
+                    <span className="text-black dark:text-white text-sm">{opt.label}</span>
+                    <span className="ml-auto text-xs text-black/30 dark:text-white/30 bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded-full">Region</span>
                   </button>
                 ))}
               </>
@@ -95,20 +94,20 @@ export function DestinationInput({ value, onChange }: Props) {
             {showResults && (
               <>
                 {isLoading && (
-                  <div className="px-4 py-3 text-white/50 text-sm flex items-center gap-2">
-                    <span className="inline-block w-3 h-3 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+                  <div className="px-4 py-3 text-black/50 dark:text-white/50 text-sm flex items-center gap-2">
+                    <span className="inline-block w-3 h-3 border-2 border-black/60 dark:border-white/60 border-t-transparent rounded-full animate-spin" />
                     Searching...
                   </div>
                 )}
 
                 {!isLoading && regions.length === 0 && airports.length === 0 && (
-                  <div className="px-4 py-3 text-white/40 text-sm">No results for "{query}"</div>
+                  <div className="px-4 py-3 text-black/40 dark:text-white/40 text-sm">No results for "{query}"</div>
                 )}
 
                 {/* Regions */}
                 {!isLoading && regions.length > 0 && (
                   <>
-                    <div className="px-4 py-2 text-xs text-white/40 uppercase tracking-wider font-medium">
+                    <div className="px-4 py-2 text-xs text-black/40 dark:text-white/40 uppercase tracking-wider font-medium">
                       Regions
                     </div>
                     {regions.map((item) => (
@@ -119,11 +118,10 @@ export function DestinationInput({ value, onChange }: Props) {
                           onChange(item.name);
                           setOpen(false);
                         }}
-                        className="w-full text-left px-4 py-2.5 hover:bg-white/10 active:bg-white/15 transition flex items-center gap-3 border-b border-white/5 last:border-0"
+                        className="w-full text-left px-4 py-2.5 hover:bg-black/5 dark:hover:bg-white/10 active:bg-black/10 dark:active:bg-white/15 transition flex items-center gap-3 border-b border-black/5 dark:border-white/5 last:border-0"
                       >
-                        <span className="text-lg w-7 shrink-0">🌐</span>
-                        <span className="text-white text-sm flex-1">{item.name}</span>
-                        <span className="text-xs text-white/30 bg-white/5 px-2 py-0.5 rounded-full">Region</span>
+                        <span className="text-black dark:text-white text-sm flex-1">{item.name}</span>
+                        <span className="text-xs text-black/30 dark:text-white/30 bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded-full">Region</span>
                       </button>
                     ))}
                   </>
@@ -132,7 +130,7 @@ export function DestinationInput({ value, onChange }: Props) {
                 {/* Airports & Cities */}
                 {!isLoading && airports.length > 0 && (
                   <>
-                    <div className="px-4 py-2 text-xs text-white/40 uppercase tracking-wider font-medium border-t border-white/10">
+                    <div className="px-4 py-2 text-xs text-black/40 dark:text-white/40 uppercase tracking-wider font-medium border-t border-black/10 dark:border-white/10">
                       Airports & Cities
                     </div>
                     {airports.map((item) => (
@@ -147,23 +145,23 @@ export function DestinationInput({ value, onChange }: Props) {
                           setQuery(label);
                           setOpen(false);
                         }}
-                        className="w-full text-left px-4 py-3 hover:bg-white/10 active:bg-white/15 transition flex items-center gap-3 border-b border-white/8 last:border-0"
+                        className="w-full text-left px-4 py-3 hover:bg-black/5 dark:hover:bg-white/10 active:bg-black/10 dark:active:bg-white/15 transition flex items-center gap-3 border-b border-black/8 dark:border-white/8 last:border-0"
                       >
-                        <span className="text-xs font-mono text-teal-400 w-10 shrink-0 text-center bg-teal-500/10 px-1.5 py-0.5 rounded">
+                        <span className="text-xs font-mono text-black/80 dark:text-white/80 w-10 shrink-0 text-center bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded">
                           {item.iataCode}
                         </span>
                         <span className="flex-1 min-w-0">
-                          <span className="block text-white text-sm font-medium truncate">
+                          <span className="block text-black dark:text-white text-sm font-medium truncate">
                             {item.name}
                           </span>
-                          <span className="block text-white/45 text-xs truncate">
+                          <span className="block text-black/45 dark:text-white/45 text-xs truncate">
                             {[item.cityName, item.countryName].filter(Boolean).join(', ')}
                           </span>
                         </span>
                         <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full ${
                           item.category === 'airport'
-                            ? 'bg-white/10 text-white/50'
-                            : 'bg-blue-500/15 text-blue-400'
+                            ? 'bg-black/8 dark:bg-white/10 text-black/50 dark:text-white/50'
+                            : 'bg-black/8 dark:bg-white/10 text-black/50 dark:text-white/50'
                         }`}>
                           {item.category === 'airport' ? 'Airport' : 'City'}
                         </span>

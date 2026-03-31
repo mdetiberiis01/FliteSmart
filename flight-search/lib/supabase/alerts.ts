@@ -8,6 +8,10 @@ export interface PriceAlert {
   destination: string;
   max_price: number;
   user_id?: string;
+  flexibility?: string;
+  custom_date_start?: string;
+  custom_date_end?: string;
+  trip_days?: number;
   created_at?: string;
   last_alerted_at?: string | null;
   is_active?: boolean;
@@ -24,6 +28,10 @@ export async function saveAlert(alert: Omit<PriceAlert, 'id' | 'created_at' | 'l
       destination: alert.destination,
       max_price: alert.max_price,
       user_id: alert.user_id ?? null,
+      flexibility: alert.flexibility ?? null,
+      custom_date_start: alert.custom_date_start ?? null,
+      custom_date_end: alert.custom_date_end ?? null,
+      trip_days: alert.trip_days ?? null,
     })
     .select()
     .single();

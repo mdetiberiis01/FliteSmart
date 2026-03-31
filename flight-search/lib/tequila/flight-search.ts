@@ -64,13 +64,18 @@ export async function searchFlightsTequila(
         const depDate = localDep ? localDep.split('T')[0] : departureDate;
         const duration = item.duration as Record<string, number> | undefined;
         const durationSecs = duration?.departure ?? 0;
-        const route = item.route as unknown[] | undefined;
+        const route = item.route as Array<{ flyTo?: string; cityTo?: string }> | undefined;
+        const stops = Math.max(0, (route?.length ?? 1) - 1);
+        const layovers = route && route.length > 1
+          ? route.slice(0, -1).map((seg) => seg.flyTo ?? '').filter(Boolean)
+          : undefined;
 
         return {
           price: item.price as number,
           airline: airlineCode,
           airlineCode,
-          stops: Math.max(0, (route?.length ?? 1) - 1),
+          stops,
+          layovers: layovers && layovers.length > 0 ? layovers : undefined,
           duration: secondsToIsoDuration(durationSecs),
           departureDate: depDate,
           returnDate,

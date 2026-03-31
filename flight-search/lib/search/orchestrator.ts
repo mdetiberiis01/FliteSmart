@@ -8,6 +8,7 @@ import { searchFlights } from '../serpapi/flight-search';
 import { searchFlightsTequila } from '../tequila/flight-search';
 import { getFlightOffers } from '../amadeus/flight-offers';
 import { AmadeusFlightOffer } from '@/types/amadeus';
+import { searchFlightsAviasales } from '../aviasales/flight-search';
 import { savePriceSnapshots, updatePriceSummary } from '../supabase/price-cache';
 import { dealRating } from '../utils/deal-rating';
 
@@ -140,6 +141,29 @@ function makeDemoHistory(basePrice: number, seed: number): PricePoint[] {
   return points;
 }
 
+// Plausible layover airports for each 1-stop demo destination (from a US origin)
+// prettier-ignore
+const DEMO_LAYOVERS: Record<string, string[]> = {
+  // Europe via European hubs
+  FCO: ['FRA'],  ATH: ['FRA'],  VIE: ['FRA'],  NAP: ['FRA'],  WAW: ['FRA'],
+  PRG: ['FRA'],  BUD: ['FRA'],  BEG: ['FRA'],  TLV: ['FRA'],  AMM: ['FRA'],
+  ARN: ['AMS'],  CPH: ['AMS'],  OSL: ['AMS'],  HEL: ['AMS'],
+  CAI: ['FRA'],  HRG: ['FRA'],  TUN: ['CDG'],  ALG: ['CDG'],
+  // Africa
+  JNB: ['AMS'],  CPT: ['AMS'],  NBO: ['AMS'],
+  CMN: ['CDG'],  ADD: ['CDG'],  ACC: ['CDG'],  DKR: ['CDG'],
+  // Asia via Asian hubs
+  BKK: ['NRT'],  HKT: ['NRT'],  CNX: ['NRT'],
+  KUL: ['ICN'],  DPS: ['ICN'],  MNL: ['ICN'],  SGN: ['ICN'],  HAN: ['ICN'],
+  DEL: ['DXB'],  BOM: ['DXB'],  BLR: ['DXB'],  CMB: ['DXB'],  KTM: ['DXB'],
+  // Central Asia via Istanbul
+  TAS: ['IST'],  ALA: ['IST'],  FRU: ['IST'],  DYU: ['IST'],  ASB: ['IST'],
+  // Latin America via Miami
+  GRU: ['MIA'],  GIG: ['MIA'],  BOG: ['MIA'],  LIM: ['MIA'],  SCL: ['MIA'],  EZE: ['MIA'],
+  // Oceania via LA
+  SYD: ['LAX'],  MEL: ['LAX'],  BNE: ['LAX'],  AKL: ['LAX'],  NAN: ['LAX'],
+};
+
 const DEST_DAY_OFFSETS: Record<string, number> = {
   // Western Europe
   LHR: 12, CDG: 8,  FCO: 10, AMS: 9,  MAD: 14, BCN: 17, FRA: 11, LIS: 7,
@@ -211,6 +235,7 @@ function makeDemoResults(
       airline: dest.airline,
       airlineCode: dest.airlineCode,
       stops: dest.stops,
+      layovers: dest.stops > 0 ? DEMO_LAYOVERS[dest.iataCode] : undefined,
       duration: dest.duration,
       historicalLow,
       avg12m,
@@ -276,11 +301,16 @@ function mapAmadeusOffers(
       const inbound = o.itineraries[1];
       const retAt = inbound?.segments[0]?.departure?.at ?? '';
       const retDate = retAt ? retAt.split('T')[0] : fallbackReturn;
+      const segments = outbound?.segments ?? [];
+      const layovers = segments.length > 1
+        ? segments.slice(0, -1).map((s) => s.arrival.iataCode).filter(Boolean)
+        : undefined;
       return {
         price: parseFloat(o.price.total),
         airline: airlineCode,
         airlineCode,
-        stops: Math.max(0, (outbound?.segments?.length ?? 1) - 1),
+        stops: Math.max(0, segments.length - 1),
+        layovers: layovers && layovers.length > 0 ? layovers : undefined,
         duration: outbound?.duration ?? 'PT0H',
         departureDate: depDate,
         returnDate: retDate,
@@ -294,7 +324,7 @@ async function searchFlightsWithFallback(
   destination: string,
   departureDate: string,
   returnDate?: string
-): Promise<{ flights: import('../serpapi/flight-search').FlightResult[]; pricePoints: PricePoint[]; dataSource: 'tequila' | 'serpapi' | 'amadeus' }> {
+): Promise<{ flights: import('../serpapi/flight-search').FlightResult[]; pricePoints: PricePoint[]; dataSource: 'tequila' | 'serpapi' | 'amadeus' | 'aviasales' }> {
   const tequila = await searchFlightsTequila(origin, destination, departureDate, returnDate);
   if (tequila.flights.length > 0) {
     return { ...tequila, dataSource: 'tequila' };
@@ -305,13 +335,17 @@ async function searchFlightsWithFallback(
   }
   const amadeusOffers = await getFlightOffers(origin, destination, departureDate, returnDate);
   const amadeusFlights = mapAmadeusOffers(amadeusOffers, departureDate, returnDate);
-  return { flights: amadeusFlights, pricePoints: [], dataSource: 'amadeus' };
+  if (amadeusFlights.length > 0) {
+    return { flights: amadeusFlights, pricePoints: [], dataSource: 'amadeus' };
+  }
+  const aviasales = await searchFlightsAviasales(origin, destination, departureDate, returnDate);
+  return { ...aviasales, dataSource: 'aviasales' };
 }
 
 function buildResult(
   origin: string,
   destCode: string,
-  flight: { price: number; airline: string; airlineCode: string; stops: number; duration: string; departureDate: string; returnDate?: string; bookingUrl?: string; bookingToken?: string },
+  flight: { price: number; airline: string; airlineCode: string; stops: number; layovers?: string[]; duration: string; departureDate: string; returnDate?: string; bookingUrl?: string; bookingToken?: string },
   pricePoints: PricePoint[],
   dataSource: string = 'serpapi'
 ): SearchResult {
@@ -333,6 +367,7 @@ function buildResult(
     airline: flight.airline,
     airlineCode: flight.airlineCode,
     stops: flight.stops,
+    layovers: flight.layovers,
     duration: flight.duration,
     bookingUrl: flight.bookingUrl,
     bookingToken: flight.bookingToken,

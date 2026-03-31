@@ -8,6 +8,7 @@ export interface FlightResult {
   airline: string;
   airlineCode: string;
   stops: number;
+  layovers?: string[]; // IATA codes of intermediate airports
   duration: string; // ISO 8601, e.g. "PT7H30M"
   departureDate: string;
   returnDate?: string;
@@ -66,11 +67,15 @@ export async function searchFlights(
         const firstLeg = it.flights?.[0];
         const flightNum = firstLeg?.flight_number ?? '';
         const airlineCode = flightNum.split(' ')[0] ?? '';
+        const layoverCodes = it.layovers
+          ?.map((l) => l.id)
+          .filter((id): id is string => Boolean(id));
         return {
           price: it.price,
           airline: firstLeg?.airline ?? '',
           airlineCode,
           stops: Math.max(0, (it.flights?.length ?? 1) - 1),
+          layovers: layoverCodes && layoverCodes.length > 0 ? layoverCodes : undefined,
           duration: minutesToIsoDuration(it.total_duration ?? 0),
           departureDate: firstLeg?.departure_airport?.time?.split(' ')[0] ?? departureDate,
           returnDate,

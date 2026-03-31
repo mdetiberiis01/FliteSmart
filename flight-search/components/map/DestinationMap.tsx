@@ -7,7 +7,7 @@ import { SearchResult } from '@/types/search';
 const MapInner = dynamic(() => import('./MapInner'), {
   ssr: false,
   loading: () => (
-    <div className="h-64 glass-card rounded-2xl flex items-center justify-center text-white/40">
+    <div className="h-64 glass-card rounded-2xl flex items-center justify-center text-black/40 dark:text-white/40">
       Loading map...
     </div>
   ),

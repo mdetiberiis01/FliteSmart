@@ -11,9 +11,9 @@ export function HistoricalLow({ historicalLow, currency = 'USD' }: Props) {
   if (!historicalLow) return null;
 
   return (
-    <span className="text-xs text-white/50">
+    <span className="text-xs text-black/50 dark:text-white/50">
       Historical low:{' '}
-      <span className="text-white/70">{formatPrice(historicalLow, currency)}</span>
+      <span className="text-black/70 dark:text-white/70">{formatPrice(historicalLow, currency)}</span>
     </span>
   );
 }
