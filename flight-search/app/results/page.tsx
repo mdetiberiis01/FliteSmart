@@ -77,28 +77,27 @@ function ResultsContent() {
     <main className="min-h-screen">
       {/* Top bar */}
       <div className="border-b border-black/10 dark:border-white/10 glass-card sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
           <button
             onClick={() => router.push('/')}
-            className="text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition text-sm flex items-center gap-2"
+            className="text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition text-sm flex items-center gap-1 shrink-0"
           >
             ← Back
           </button>
-          <div className="text-center">
-            <div>
-              <span className="text-black dark:text-white font-semibold">
+          <div className="flex-1 text-center min-w-0">
+            <div className="truncate">
+              <span className="text-black dark:text-white font-semibold text-sm">
                 {originName} → {destination}
               </span>
-              <span className="text-black/50 dark:text-white/50 text-sm ml-2">{flexLabel}</span>
+              <span className="text-black/50 dark:text-white/50 text-xs ml-2 hidden sm:inline">{flexLabel}</span>
             </div>
             <button
               onClick={() => setShowMap(!showMap)}
-              className="text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition text-xs mt-1"
+              className="text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition text-xs mt-0.5"
             >
               {showMap ? 'Hide map' : 'Show map'}
             </button>
           </div>
-          <div className="w-16" />
         </div>
       </div>
 

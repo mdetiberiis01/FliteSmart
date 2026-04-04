@@ -45,8 +45,8 @@ export function FlightRow({ result, index }: Props) {
       <div className="flex items-stretch gap-0">
 
         {/* ── Left: destination name ── */}
-        <div className="px-4 py-3 flex flex-col justify-center w-36 shrink-0 border-r border-black/6 dark:border-white/8">
-          <div className="font-semibold text-black dark:text-white text-sm leading-tight truncate">
+        <div className="px-3 py-3 flex flex-col justify-center w-24 sm:w-36 shrink-0 border-r border-black/6 dark:border-white/8">
+          <div className="font-semibold text-black dark:text-white text-xs sm:text-sm leading-tight truncate">
             {result.destinationCity || result.destination}
           </div>
           <div className="text-xs text-black/45 dark:text-white/45 truncate mt-0.5">
@@ -95,12 +95,12 @@ export function FlightRow({ result, index }: Props) {
         </div>
 
         {/* ── Right: baggage + price + CTA ── */}
-        <div className="flex flex-col items-end justify-center gap-2 px-4 py-3 border-l border-black/6 dark:border-white/8 shrink-0">
+        <div className="flex flex-col items-end justify-center gap-1.5 px-3 py-3 border-l border-black/6 dark:border-white/8 shrink-0">
           <BaggageInfo carryOn={1} checked={0} />
-          <div className="text-xl font-bold text-black dark:text-white tabular-nums">
+          <div className="text-lg sm:text-xl font-bold text-black dark:text-white tabular-nums">
             {formatPrice(result.price, result.currency)}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <DealBadge rating={result.dealRating} percent={result.dealPercent} />
             <span className="text-xs font-medium text-black/50 dark:text-white/50 group-hover:text-black dark:group-hover:text-white transition-colors">
               Book →

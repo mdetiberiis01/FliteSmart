@@ -24,15 +24,15 @@ export function SortFilterBar({
   onViewModeChange,
 }: Props) {
   return (
-    <div className="flex flex-wrap items-center gap-3 mb-6">
+    <div className="flex flex-wrap items-center gap-2 mb-6">
       {/* Sort */}
-      <div className="flex items-center gap-2 text-sm">
-        <span className="text-black/40 dark:text-white/40">Sort:</span>
+      <div className="flex items-center gap-1.5 text-sm">
+        <span className="text-black/40 dark:text-white/40 text-xs">Sort:</span>
         {(['price', 'date', 'deal'] as SortKey[]).map((key) => (
           <button
             key={key}
             onClick={() => onSortChange(key)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
               sortBy === key
                 ? 'bg-black text-white dark:bg-white dark:text-black'
                 : 'bg-black/5 text-black/60 hover:bg-black/10 hover:text-black dark:bg-white/5 dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white'
@@ -44,13 +44,13 @@ export function SortFilterBar({
       </div>
 
       {/* Stops filter */}
-      <div className="flex items-center gap-2 text-sm">
-        <span className="text-black/40 dark:text-white/40">Stops:</span>
+      <div className="flex items-center gap-1.5 text-sm">
+        <span className="text-black/40 dark:text-white/40 text-xs">Stops:</span>
         {([null, 0, 1] as (number | null)[]).map((stops) => (
           <button
             key={String(stops)}
             onClick={() => onFilterStopsChange(stops)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
               filterStops === stops
                 ? 'bg-black text-white dark:bg-white dark:text-black'
                 : 'bg-black/5 text-black/60 hover:bg-black/10 hover:text-black dark:bg-white/5 dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white'

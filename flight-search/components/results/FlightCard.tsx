@@ -82,7 +82,7 @@ export function FlightCard({ result, index }: Props) {
           <p className="text-black/50 dark:text-white/50 text-sm">{result.destinationCountry}</p>
         </div>
         <div className="text-right">
-          <div className="text-2xl font-bold text-black dark:text-white tabular-nums">
+          <div className="text-xl sm:text-2xl font-bold text-black dark:text-white tabular-nums">
             {formatPrice(result.price, result.currency)}
           </div>
           <div className="text-xs text-black/50 dark:text-white/50">per person</div>
