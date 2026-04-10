@@ -15,6 +15,10 @@ export function useSearchForm() {
     destination: '',
     flexibility: 'anytime',
     tripDays: 7,
+    tripType: 'roundtrip',
+    travelers: 1,
+    cabinClass: 'economy',
+    maxBudget: 0,
   });
 
   function updateField<K extends keyof SearchParams>(key: K, value: SearchParams[K]) {

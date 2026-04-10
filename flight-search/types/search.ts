@@ -6,6 +6,10 @@ export interface SearchParams {
   customDateStart?: string;
   customDateEnd?: string;
   tripDays?: number;
+  tripType?: 'roundtrip' | 'oneway';
+  travelers?: number;
+  cabinClass?: 'economy' | 'premium_economy' | 'business' | 'first';
+  maxBudget?: number;
 }
 
 export interface PricePoint {
