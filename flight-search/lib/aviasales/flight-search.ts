@@ -50,14 +50,15 @@ export async function searchFlightsAviasales(
     const url = new URL('https://api.travelpayouts.com/aviasales/v3/prices_for_dates');
     url.searchParams.set('origin', origin);
     url.searchParams.set('destination', destination);
-    url.searchParams.set('departure_at', departureDate);      // YYYY-MM-DD or YYYY-MM
+    // Aviasales prices_for_dates only has cached data by month — YYYY-MM-DD returns empty
+    url.searchParams.set('departure_at', departureDate.slice(0, 7));
     url.searchParams.set('sorting', 'price');
     url.searchParams.set('currency', 'usd');
-    url.searchParams.set('limit', '5');
+    url.searchParams.set('limit', '30');
     url.searchParams.set('token', AVIASALES_TOKEN);
 
     if (returnDate) {
-      url.searchParams.set('return_at', returnDate);
+      url.searchParams.set('return_at', returnDate.slice(0, 7));
       url.searchParams.set('one_way', 'false');
     } else {
       url.searchParams.set('one_way', 'true');
@@ -76,7 +77,15 @@ export async function searchFlightsAviasales(
     }
 
     const flights: FlightResult[] = (data.data as AviasalesResult[])
-      .filter((item) => (item.price ?? 0) > 0)
+      .filter((item) => {
+        if ((item.price ?? 0) <= 0) return false;
+        // Only keep flights on or after the requested departure date
+        if (item.departure_at) {
+          const itemDate = item.departure_at.split('T')[0];
+          if (itemDate < departureDate) return false;
+        }
+        return true;
+      })
       .map((item) => {
         const depDate = item.departure_at ? item.departure_at.split('T')[0] : departureDate;
         const retDate = item.return_at ? item.return_at.split('T')[0] : returnDate;
