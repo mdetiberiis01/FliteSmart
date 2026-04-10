@@ -18,6 +18,7 @@ interface TpAirport {
   city_code: string;
   country_code: string;
   coordinates: { lat: number; lon: number };
+  flightable: boolean;
 }
 
 // Cache airports data in memory for the lifetime of the server process
@@ -45,7 +46,8 @@ async function getAirports(): Promise<TpAirport[]> {
       a.city_code &&
       a.city_code.length === 3 &&
       a.coordinates?.lat != null &&
-      a.coordinates?.lon != null
+      a.coordinates?.lon != null &&
+      a.flightable === true
   );
 
   return cachedAirports;
