@@ -45,6 +45,12 @@ export async function getUser() {
   return data.user;
 }
 
+export async function updateName(fullName: string) {
+  const supabase = getSupabase();
+  const { error } = await supabase.auth.updateUser({ data: { full_name: fullName } });
+  if (error) throw error;
+}
+
 export async function updateHomeAirport(iataCode: string, airportName: string) {
   const supabase = getSupabase();
   const { error } = await supabase.auth.updateUser({

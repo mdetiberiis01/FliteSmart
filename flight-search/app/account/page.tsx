@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getUser, updateHomeAirport } from '@/lib/supabase/auth';
+import { getUser, updateHomeAirport, updateName } from '@/lib/supabase/auth';
 import { getUserAlerts, deactivateAlert, deleteAlert, reactivateAlert, UserAlert } from '@/lib/supabase/user-alerts';
 import { Nav } from '@/components/ui/Nav';
 import { OriginInput } from '@/components/search/OriginInput';
@@ -14,6 +14,12 @@ export default function AccountPage() {
   const [user, setUser] = useState<User | null>(null);
   const [alerts, setAlerts] = useState<UserAlert[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Name edit state
+  const [nameValue, setNameValue] = useState('');
+  const [editingName, setEditingName] = useState(false);
+  const [savingName, setSavingName] = useState(false);
+  const [nameSaved, setNameSaved] = useState(false);
 
   // Home airport state
   const [homeAirport, setHomeAirport] = useState('');
@@ -29,6 +35,7 @@ export default function AccountPage() {
         return;
       }
       setUser(u);
+      setNameValue((u.user_metadata?.full_name as string | undefined) ?? '');
       // Populate home airport from saved metadata
       const savedCode = u.user_metadata?.home_airport as string | undefined;
       const savedName = u.user_metadata?.home_airport_name as string | undefined;
@@ -46,6 +53,22 @@ export default function AccountPage() {
     }
     load();
   }, [router]);
+
+  async function handleSaveName() {
+    if (!nameValue.trim()) return;
+    setSavingName(true);
+    try {
+      await updateName(nameValue.trim());
+      setUser((prev) => prev ? { ...prev, user_metadata: { ...prev.user_metadata, full_name: nameValue.trim() } } : prev);
+      setEditingName(false);
+      setNameSaved(true);
+      setTimeout(() => setNameSaved(false), 2500);
+    } catch {
+      // ignore
+    } finally {
+      setSavingName(false);
+    }
+  }
 
   async function handleSaveAirport() {
     if (!homeAirport) return;
@@ -76,7 +99,7 @@ export default function AccountPage() {
     setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, is_active: true } : a)));
   }
 
-  const name = user?.user_metadata?.full_name as string | undefined;
+  const name = nameValue || (user?.user_metadata?.full_name as string | undefined);
   const memberSince = user?.created_at
     ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
     : null;
@@ -103,7 +126,45 @@ export default function AccountPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-black/40 dark:text-white/40 mb-1">Name</p>
-                <p className="text-black dark:text-white font-medium">{name || '—'}</p>
+                {editingName ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      autoFocus
+                      value={nameValue}
+                      onChange={(e) => setNameValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveName();
+                        if (e.key === 'Escape') setEditingName(false);
+                      }}
+                      className="flex-1 min-w-0 bg-black/5 dark:bg-white/8 border border-black/10 dark:border-white/10 rounded-lg px-3 py-1.5 text-black dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20 transition"
+                    />
+                    <button
+                      onClick={handleSaveName}
+                      disabled={!nameValue.trim() || savingName}
+                      className="shrink-0 px-3 py-1.5 rounded-lg bg-black dark:bg-white text-white dark:text-black text-xs font-medium hover:bg-black/80 dark:hover:bg-white/80 disabled:opacity-40 transition"
+                    >
+                      {savingName ? '…' : 'Save'}
+                    </button>
+                    <button
+                      onClick={() => setEditingName(false)}
+                      className="text-xs text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60 transition"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <p className="text-black dark:text-white font-medium">
+                      {name || '—'}{nameSaved && <span className="ml-2 text-green-500 text-xs">Saved ✓</span>}
+                    </p>
+                    <button
+                      onClick={() => { setNameValue(name || ''); setEditingName(true); }}
+                      className="text-xs text-black/35 dark:text-white/35 hover:text-black/60 dark:hover:text-white/60 transition"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                )}
               </div>
               <div>
                 <p className="text-black/40 dark:text-white/40 mb-1">Email</p>
