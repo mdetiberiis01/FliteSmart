@@ -12,110 +12,108 @@ export interface AutocompleteResult {
   score: number;
 }
 
-// Static fallback — used when Amadeus API keys aren't configured
-const STATIC_AIRPORTS: AutocompleteResult[] = [
-  { iataCode: 'JFK', name: 'John F Kennedy Intl', cityName: 'New York', countryName: 'United States', detailedName: 'John F Kennedy Intl', subType: 'AIRPORT', category: 'airport', score: 100 },
-  { iataCode: 'LGA', name: 'LaGuardia', cityName: 'New York', countryName: 'United States', detailedName: 'LaGuardia', subType: 'AIRPORT', category: 'airport', score: 90 },
-  { iataCode: 'EWR', name: 'Newark Liberty Intl', cityName: 'Newark', countryName: 'United States', detailedName: 'Newark Liberty Intl', subType: 'AIRPORT', category: 'airport', score: 85 },
-  { iataCode: 'LAX', name: 'Los Angeles Intl', cityName: 'Los Angeles', countryName: 'United States', detailedName: 'Los Angeles Intl', subType: 'AIRPORT', category: 'airport', score: 100 },
-  { iataCode: 'SFO', name: 'San Francisco Intl', cityName: 'San Francisco', countryName: 'United States', detailedName: 'San Francisco Intl', subType: 'AIRPORT', category: 'airport', score: 95 },
-  { iataCode: 'ORD', name: "O'Hare Intl", cityName: 'Chicago', countryName: 'United States', detailedName: "O'Hare Intl", subType: 'AIRPORT', category: 'airport', score: 95 },
-  { iataCode: 'MDW', name: 'Midway Intl', cityName: 'Chicago', countryName: 'United States', detailedName: 'Midway Intl', subType: 'AIRPORT', category: 'airport', score: 80 },
-  { iataCode: 'MIA', name: 'Miami Intl', cityName: 'Miami', countryName: 'United States', detailedName: 'Miami Intl', subType: 'AIRPORT', category: 'airport', score: 90 },
-  { iataCode: 'ATL', name: 'Hartsfield-Jackson Atlanta Intl', cityName: 'Atlanta', countryName: 'United States', detailedName: 'Hartsfield-Jackson Atlanta Intl', subType: 'AIRPORT', category: 'airport', score: 95 },
-  { iataCode: 'BOS', name: 'Logan Intl', cityName: 'Boston', countryName: 'United States', detailedName: 'Logan Intl', subType: 'AIRPORT', category: 'airport', score: 90 },
-  { iataCode: 'SEA', name: 'Seattle-Tacoma Intl', cityName: 'Seattle', countryName: 'United States', detailedName: 'Seattle-Tacoma Intl', subType: 'AIRPORT', category: 'airport', score: 88 },
-  { iataCode: 'DFW', name: 'Dallas/Fort Worth Intl', cityName: 'Dallas', countryName: 'United States', detailedName: 'Dallas/Fort Worth Intl', subType: 'AIRPORT', category: 'airport', score: 92 },
-  { iataCode: 'DEN', name: 'Denver Intl', cityName: 'Denver', countryName: 'United States', detailedName: 'Denver Intl', subType: 'AIRPORT', category: 'airport', score: 88 },
-  { iataCode: 'LAS', name: 'Harry Reid Intl', cityName: 'Las Vegas', countryName: 'United States', detailedName: 'Harry Reid Intl', subType: 'AIRPORT', category: 'airport', score: 88 },
-  { iataCode: 'PHX', name: 'Phoenix Sky Harbor Intl', cityName: 'Phoenix', countryName: 'United States', detailedName: 'Phoenix Sky Harbor Intl', subType: 'AIRPORT', category: 'airport', score: 85 },
-  { iataCode: 'IAD', name: 'Dulles Intl', cityName: 'Washington', countryName: 'United States', detailedName: 'Dulles Intl', subType: 'AIRPORT', category: 'airport', score: 85 },
-  { iataCode: 'DCA', name: 'Reagan National', cityName: 'Washington', countryName: 'United States', detailedName: 'Reagan National', subType: 'AIRPORT', category: 'airport', score: 82 },
-  { iataCode: 'HNL', name: 'Daniel K. Inouye Intl', cityName: 'Honolulu', countryName: 'United States', detailedName: 'Daniel K. Inouye Intl', subType: 'AIRPORT', category: 'airport', score: 82 },
-  { iataCode: 'MSP', name: 'Minneapolis-Saint Paul Intl', cityName: 'Minneapolis', countryName: 'United States', detailedName: 'Minneapolis-Saint Paul Intl', subType: 'AIRPORT', category: 'airport', score: 82 },
-  { iataCode: 'DTW', name: 'Detroit Metropolitan Wayne County', cityName: 'Detroit', countryName: 'United States', detailedName: 'Detroit Metropolitan Wayne County', subType: 'AIRPORT', category: 'airport', score: 80 },
-  { iataCode: 'LHR', name: 'Heathrow', cityName: 'London', countryName: 'United Kingdom', detailedName: 'Heathrow', subType: 'AIRPORT', category: 'airport', score: 100 },
-  { iataCode: 'LGW', name: 'Gatwick', cityName: 'London', countryName: 'United Kingdom', detailedName: 'Gatwick', subType: 'AIRPORT', category: 'airport', score: 90 },
-  { iataCode: 'STN', name: 'Stansted', cityName: 'London', countryName: 'United Kingdom', detailedName: 'Stansted', subType: 'AIRPORT', category: 'airport', score: 85 },
-  { iataCode: 'CDG', name: 'Charles de Gaulle', cityName: 'Paris', countryName: 'France', detailedName: 'Charles de Gaulle', subType: 'AIRPORT', category: 'airport', score: 100 },
-  { iataCode: 'ORY', name: 'Orly', cityName: 'Paris', countryName: 'France', detailedName: 'Orly', subType: 'AIRPORT', category: 'airport', score: 85 },
-  { iataCode: 'FRA', name: 'Frankfurt Intl', cityName: 'Frankfurt', countryName: 'Germany', detailedName: 'Frankfurt Intl', subType: 'AIRPORT', category: 'airport', score: 100 },
-  { iataCode: 'MUC', name: 'Munich Intl', cityName: 'Munich', countryName: 'Germany', detailedName: 'Munich Intl', subType: 'AIRPORT', category: 'airport', score: 90 },
-  { iataCode: 'BER', name: 'Berlin Brandenburg', cityName: 'Berlin', countryName: 'Germany', detailedName: 'Berlin Brandenburg', subType: 'AIRPORT', category: 'airport', score: 85 },
-  { iataCode: 'AMS', name: 'Amsterdam Schiphol', cityName: 'Amsterdam', countryName: 'Netherlands', detailedName: 'Amsterdam Schiphol', subType: 'AIRPORT', category: 'airport', score: 100 },
-  { iataCode: 'MAD', name: 'Adolfo Suárez Madrid-Barajas', cityName: 'Madrid', countryName: 'Spain', detailedName: 'Adolfo Suárez Madrid-Barajas', subType: 'AIRPORT', category: 'airport', score: 95 },
-  { iataCode: 'BCN', name: 'Barcelona El Prat', cityName: 'Barcelona', countryName: 'Spain', detailedName: 'Barcelona El Prat', subType: 'AIRPORT', category: 'airport', score: 92 },
-  { iataCode: 'FCO', name: 'Leonardo da Vinci Intl', cityName: 'Rome', countryName: 'Italy', detailedName: 'Leonardo da Vinci Intl', subType: 'AIRPORT', category: 'airport', score: 95 },
-  { iataCode: 'MXP', name: 'Malpensa Intl', cityName: 'Milan', countryName: 'Italy', detailedName: 'Malpensa Intl', subType: 'AIRPORT', category: 'airport', score: 90 },
-  { iataCode: 'ZRH', name: 'Zurich', cityName: 'Zurich', countryName: 'Switzerland', detailedName: 'Zurich', subType: 'AIRPORT', category: 'airport', score: 90 },
-  { iataCode: 'VIE', name: 'Vienna Intl', cityName: 'Vienna', countryName: 'Austria', detailedName: 'Vienna Intl', subType: 'AIRPORT', category: 'airport', score: 88 },
-  { iataCode: 'ATH', name: 'Athens Intl', cityName: 'Athens', countryName: 'Greece', detailedName: 'Athens Intl', subType: 'AIRPORT', category: 'airport', score: 88 },
-  { iataCode: 'LIS', name: 'Lisbon Portela', cityName: 'Lisbon', countryName: 'Portugal', detailedName: 'Lisbon Portela', subType: 'AIRPORT', category: 'airport', score: 88 },
-  { iataCode: 'CPH', name: 'Copenhagen', cityName: 'Copenhagen', countryName: 'Denmark', detailedName: 'Copenhagen', subType: 'AIRPORT', category: 'airport', score: 85 },
-  { iataCode: 'ARN', name: 'Stockholm Arlanda', cityName: 'Stockholm', countryName: 'Sweden', detailedName: 'Stockholm Arlanda', subType: 'AIRPORT', category: 'airport', score: 85 },
-  { iataCode: 'OSL', name: 'Oslo Gardermoen', cityName: 'Oslo', countryName: 'Norway', detailedName: 'Oslo Gardermoen', subType: 'AIRPORT', category: 'airport', score: 82 },
-  { iataCode: 'HEL', name: 'Helsinki-Vantaa', cityName: 'Helsinki', countryName: 'Finland', detailedName: 'Helsinki-Vantaa', subType: 'AIRPORT', category: 'airport', score: 82 },
-  { iataCode: 'DXB', name: 'Dubai Intl', cityName: 'Dubai', countryName: 'United Arab Emirates', detailedName: 'Dubai Intl', subType: 'AIRPORT', category: 'airport', score: 100 },
-  { iataCode: 'DOH', name: 'Hamad Intl', cityName: 'Doha', countryName: 'Qatar', detailedName: 'Hamad Intl', subType: 'AIRPORT', category: 'airport', score: 95 },
-  { iataCode: 'AUH', name: 'Abu Dhabi Intl', cityName: 'Abu Dhabi', countryName: 'United Arab Emirates', detailedName: 'Abu Dhabi Intl', subType: 'AIRPORT', category: 'airport', score: 88 },
-  { iataCode: 'TLV', name: 'Ben Gurion Intl', cityName: 'Tel Aviv', countryName: 'Israel', detailedName: 'Ben Gurion Intl', subType: 'AIRPORT', category: 'airport', score: 88 },
-  { iataCode: 'NRT', name: 'Narita Intl', cityName: 'Tokyo', countryName: 'Japan', detailedName: 'Narita Intl', subType: 'AIRPORT', category: 'airport', score: 100 },
-  { iataCode: 'HND', name: 'Haneda', cityName: 'Tokyo', countryName: 'Japan', detailedName: 'Haneda', subType: 'AIRPORT', category: 'airport', score: 98 },
-  { iataCode: 'KIX', name: 'Kansai Intl', cityName: 'Osaka', countryName: 'Japan', detailedName: 'Kansai Intl', subType: 'AIRPORT', category: 'airport', score: 90 },
-  { iataCode: 'ICN', name: 'Incheon Intl', cityName: 'Seoul', countryName: 'South Korea', detailedName: 'Incheon Intl', subType: 'AIRPORT', category: 'airport', score: 100 },
-  { iataCode: 'PEK', name: 'Beijing Capital Intl', cityName: 'Beijing', countryName: 'China', detailedName: 'Beijing Capital Intl', subType: 'AIRPORT', category: 'airport', score: 98 },
-  { iataCode: 'PVG', name: 'Shanghai Pudong Intl', cityName: 'Shanghai', countryName: 'China', detailedName: 'Shanghai Pudong Intl', subType: 'AIRPORT', category: 'airport', score: 98 },
-  { iataCode: 'HKG', name: 'Hong Kong Intl', cityName: 'Hong Kong', countryName: 'Hong Kong', detailedName: 'Hong Kong Intl', subType: 'AIRPORT', category: 'airport', score: 100 },
-  { iataCode: 'TPE', name: 'Taiwan Taoyuan Intl', cityName: 'Taipei', countryName: 'Taiwan', detailedName: 'Taiwan Taoyuan Intl', subType: 'AIRPORT', category: 'airport', score: 95 },
-  { iataCode: 'SIN', name: 'Changi', cityName: 'Singapore', countryName: 'Singapore', detailedName: 'Changi', subType: 'AIRPORT', category: 'airport', score: 100 },
-  { iataCode: 'BKK', name: 'Suvarnabhumi', cityName: 'Bangkok', countryName: 'Thailand', detailedName: 'Suvarnabhumi', subType: 'AIRPORT', category: 'airport', score: 100 },
-  { iataCode: 'DMK', name: 'Don Mueang Intl', cityName: 'Bangkok', countryName: 'Thailand', detailedName: 'Don Mueang Intl', subType: 'AIRPORT', category: 'airport', score: 85 },
-  { iataCode: 'KUL', name: 'Kuala Lumpur Intl', cityName: 'Kuala Lumpur', countryName: 'Malaysia', detailedName: 'Kuala Lumpur Intl', subType: 'AIRPORT', category: 'airport', score: 95 },
-  { iataCode: 'CGK', name: 'Soekarno-Hatta Intl', cityName: 'Jakarta', countryName: 'Indonesia', detailedName: 'Soekarno-Hatta Intl', subType: 'AIRPORT', category: 'airport', score: 95 },
-  { iataCode: 'DPS', name: 'Ngurah Rai Intl', cityName: 'Bali', countryName: 'Indonesia', detailedName: 'Ngurah Rai Intl', subType: 'AIRPORT', category: 'airport', score: 92 },
-  { iataCode: 'MNL', name: 'Ninoy Aquino Intl', cityName: 'Manila', countryName: 'Philippines', detailedName: 'Ninoy Aquino Intl', subType: 'AIRPORT', category: 'airport', score: 90 },
-  { iataCode: 'SGN', name: 'Tan Son Nhat Intl', cityName: 'Ho Chi Minh City', countryName: 'Vietnam', detailedName: 'Tan Son Nhat Intl', subType: 'AIRPORT', category: 'airport', score: 90 },
-  { iataCode: 'HAN', name: 'Noi Bai Intl', cityName: 'Hanoi', countryName: 'Vietnam', detailedName: 'Noi Bai Intl', subType: 'AIRPORT', category: 'airport', score: 88 },
-  { iataCode: 'SYD', name: 'Sydney Kingsford Smith', cityName: 'Sydney', countryName: 'Australia', detailedName: 'Sydney Kingsford Smith', subType: 'AIRPORT', category: 'airport', score: 100 },
-  { iataCode: 'MEL', name: 'Melbourne', cityName: 'Melbourne', countryName: 'Australia', detailedName: 'Melbourne', subType: 'AIRPORT', category: 'airport', score: 95 },
-  { iataCode: 'BNE', name: 'Brisbane', cityName: 'Brisbane', countryName: 'Australia', detailedName: 'Brisbane', subType: 'AIRPORT', category: 'airport', score: 88 },
-  { iataCode: 'AKL', name: 'Auckland Intl', cityName: 'Auckland', countryName: 'New Zealand', detailedName: 'Auckland Intl', subType: 'AIRPORT', category: 'airport', score: 92 },
-  { iataCode: 'DEL', name: 'Indira Gandhi Intl', cityName: 'New Delhi', countryName: 'India', detailedName: 'Indira Gandhi Intl', subType: 'AIRPORT', category: 'airport', score: 98 },
-  { iataCode: 'BOM', name: 'Chhatrapati Shivaji Intl', cityName: 'Mumbai', countryName: 'India', detailedName: 'Chhatrapati Shivaji Intl', subType: 'AIRPORT', category: 'airport', score: 95 },
-  { iataCode: 'GRU', name: 'São Paulo Guarulhos Intl', cityName: 'São Paulo', countryName: 'Brazil', detailedName: 'São Paulo Guarulhos Intl', subType: 'AIRPORT', category: 'airport', score: 98 },
-  { iataCode: 'GIG', name: 'Rio de Janeiro Galeão Intl', cityName: 'Rio de Janeiro', countryName: 'Brazil', detailedName: 'Rio de Janeiro Galeão Intl', subType: 'AIRPORT', category: 'airport', score: 92 },
-  { iataCode: 'EZE', name: 'Ministro Pistarini Intl', cityName: 'Buenos Aires', countryName: 'Argentina', detailedName: 'Ministro Pistarini Intl', subType: 'AIRPORT', category: 'airport', score: 92 },
-  { iataCode: 'BOG', name: 'El Dorado Intl', cityName: 'Bogotá', countryName: 'Colombia', detailedName: 'El Dorado Intl', subType: 'AIRPORT', category: 'airport', score: 90 },
-  { iataCode: 'LIM', name: 'Jorge Chávez Intl', cityName: 'Lima', countryName: 'Peru', detailedName: 'Jorge Chávez Intl', subType: 'AIRPORT', category: 'airport', score: 88 },
-  { iataCode: 'SCL', name: 'Arturo Merino Benítez Intl', cityName: 'Santiago', countryName: 'Chile', detailedName: 'Arturo Merino Benítez Intl', subType: 'AIRPORT', category: 'airport', score: 88 },
-  { iataCode: 'MEX', name: 'Benito Juárez Intl', cityName: 'Mexico City', countryName: 'Mexico', detailedName: 'Benito Juárez Intl', subType: 'AIRPORT', category: 'airport', score: 95 },
-  { iataCode: 'CUN', name: 'Cancún Intl', cityName: 'Cancún', countryName: 'Mexico', detailedName: 'Cancún Intl', subType: 'AIRPORT', category: 'airport', score: 90 },
-  { iataCode: 'YYZ', name: 'Toronto Pearson Intl', cityName: 'Toronto', countryName: 'Canada', detailedName: 'Toronto Pearson Intl', subType: 'AIRPORT', category: 'airport', score: 98 },
-  { iataCode: 'YVR', name: 'Vancouver Intl', cityName: 'Vancouver', countryName: 'Canada', detailedName: 'Vancouver Intl', subType: 'AIRPORT', category: 'airport', score: 92 },
-  { iataCode: 'YUL', name: 'Montreal-Trudeau Intl', cityName: 'Montreal', countryName: 'Canada', detailedName: 'Montreal-Trudeau Intl', subType: 'AIRPORT', category: 'airport', score: 88 },
-  { iataCode: 'JNB', name: 'O.R. Tambo Intl', cityName: 'Johannesburg', countryName: 'South Africa', detailedName: 'O.R. Tambo Intl', subType: 'AIRPORT', category: 'airport', score: 95 },
-  { iataCode: 'CPT', name: 'Cape Town Intl', cityName: 'Cape Town', countryName: 'South Africa', detailedName: 'Cape Town Intl', subType: 'AIRPORT', category: 'airport', score: 90 },
-  { iataCode: 'CAI', name: 'Cairo Intl', cityName: 'Cairo', countryName: 'Egypt', detailedName: 'Cairo Intl', subType: 'AIRPORT', category: 'airport', score: 90 },
-  { iataCode: 'NBO', name: 'Jomo Kenyatta Intl', cityName: 'Nairobi', countryName: 'Kenya', detailedName: 'Jomo Kenyatta Intl', subType: 'AIRPORT', category: 'airport', score: 88 },
-  { iataCode: 'CMN', name: 'Mohammed V Intl', cityName: 'Casablanca', countryName: 'Morocco', detailedName: 'Mohammed V Intl', subType: 'AIRPORT', category: 'airport', score: 85 },
-];
+interface TpAirport {
+  code: string;
+  name: string;
+  city_code: string;
+  country_code: string;
+  flightable: boolean;
+}
 
-function searchStaticAirports(q: string): AutocompleteResult[] {
-  const normalized = q.toLowerCase().trim();
-  return STATIC_AIRPORTS.filter(
-    (a) =>
-      a.iataCode.toLowerCase().includes(normalized) ||
-      a.name.toLowerCase().includes(normalized) ||
-      a.cityName.toLowerCase().includes(normalized) ||
-      a.countryName.toLowerCase().includes(normalized)
-  ).sort((a, b) => b.score - a.score).slice(0, 8);
+interface TpCity {
+  code: string;
+  name: string;
+  country_code: string;
+}
+
+interface TpCountry {
+  code: string;
+  name: string;
+}
+
+// In-memory cache — populated once per server process
+let airportIndex: AutocompleteResult[] | null = null;
+
+async function buildIndex(): Promise<AutocompleteResult[]> {
+  if (airportIndex) return airportIndex;
+
+  const [airportsRes, citiesRes, countriesRes] = await Promise.all([
+    fetch('https://api.travelpayouts.com/data/en/airports.json', { next: { revalidate: 86400 } }),
+    fetch('https://api.travelpayouts.com/data/en/cities.json', { next: { revalidate: 86400 } }),
+    fetch('https://api.travelpayouts.com/data/en/countries.json', { next: { revalidate: 86400 } }),
+  ]);
+
+  if (!airportsRes.ok) throw new Error('Failed to fetch airport data');
+
+  const airports: TpAirport[] = await airportsRes.json();
+  const cities: TpCity[] = citiesRes.ok ? await citiesRes.json() : [];
+  const countries: TpCountry[] = countriesRes.ok ? await countriesRes.json() : [];
+
+  const cityMap = new Map<string, string>();
+  for (const c of cities) {
+    if (c.code && c.name) cityMap.set(c.code, c.name);
+  }
+
+  const countryMap = new Map<string, string>();
+  for (const c of countries) {
+    if (c.code && c.name) countryMap.set(c.code, c.name);
+  }
+
+  airportIndex = airports
+    .filter((a) => a.code?.length === 3 && a.city_code?.length === 3 && a.flightable)
+    .map((a) => {
+      const cityName = cityMap.get(a.city_code) || '';
+      const countryName = countryMap.get(a.country_code) || '';
+      return {
+        iataCode: a.code,
+        name: a.name || a.code,
+        cityName,
+        countryName,
+        detailedName: a.name || a.code,
+        subType: 'AIRPORT',
+        category: 'airport' as const,
+        score: 50,
+      };
+    });
+
+  return airportIndex;
+}
+
+function scoreMatch(result: AutocompleteResult, q: string): number {
+  const ql = q.toLowerCase();
+  const code = result.iataCode.toLowerCase();
+  const name = result.name.toLowerCase();
+  const city = result.cityName.toLowerCase();
+  const country = result.countryName.toLowerCase();
+
+  if (code === ql) return 100;
+  if (city === ql) return 95;
+  if (name === ql) return 90;
+  if (code.startsWith(ql)) return 85;
+  if (city.startsWith(ql)) return 80;
+  if (name.startsWith(ql)) return 75;
+  if (city.includes(ql)) return 60;
+  if (name.includes(ql)) return 55;
+  if (country.startsWith(ql)) return 40;
+  if (country.includes(ql)) return 30;
+  return 0;
+}
+
+function searchAirports(q: string, limit = 8): AutocompleteResult[] {
+  if (!airportIndex) return [];
+  const results: AutocompleteResult[] = [];
+  for (const airport of airportIndex) {
+    const s = scoreMatch(airport, q);
+    if (s > 0) results.push({ ...airport, score: s });
+  }
+  return results.sort((a, b) => b.score - a.score).slice(0, limit);
 }
 
 function matchingRegions(q: string): AutocompleteResult[] {
-  const normalized = q.toLowerCase().trim();
+  const ql = q.toLowerCase().trim();
   const matches: AutocompleteResult[] = [];
   for (const [key, region] of Object.entries(REGIONS)) {
-    if (key.includes(normalized) || region.label.toLowerCase().includes(normalized)) {
+    if (key.includes(ql) || region.label.toLowerCase().includes(ql)) {
       matches.push({
         iataCode: '',
         name: region.label,
@@ -131,7 +129,7 @@ function matchingRegions(q: string): AutocompleteResult[] {
   return matches;
 }
 
-export function GET(request: NextRequest) {
+export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get('q');
   const type = request.nextUrl.searchParams.get('type') || 'origin';
 
@@ -139,14 +137,20 @@ export function GET(request: NextRequest) {
     return NextResponse.json([]);
   }
 
+  try {
+    await buildIndex();
+  } catch {
+    // If the data fetch fails, return empty rather than error
+    return NextResponse.json([]);
+  }
+
   const results: AutocompleteResult[] = [];
 
-  // For destination queries, prepend matching regions
   if (type === 'destination') {
     results.push(...matchingRegions(q));
   }
 
-  results.push(...searchStaticAirports(q));
+  results.push(...searchAirports(q, 8));
 
   return NextResponse.json(results);
 }
