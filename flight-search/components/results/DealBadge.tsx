@@ -8,14 +8,31 @@ interface Props {
 }
 
 const RATING_CONFIG = {
-  great: { label: 'Great deal', color: 'bg-black/15 text-black border-black/30 dark:bg-white/20 dark:text-white dark:border-white/40' },
-  good: { label: 'Good deal', color: 'bg-black/10 text-black/90 border-black/20 dark:bg-white/12 dark:text-white/90 dark:border-white/30' },
-  fair: { label: 'Fair price', color: 'bg-black/5 text-black/70 border-black/15 dark:bg-white/8 dark:text-white/70 dark:border-white/20' },
+  great: {
+    label: 'Great deal',
+    color: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-500/30',
+    icon: '✓',
+  },
+  good: {
+    label: 'Good deal',
+    color: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/15 dark:text-sky-400 dark:border-sky-500/30',
+    icon: null,
+  },
+  fair: {
+    label: 'Fair price',
+    color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/25',
+    icon: null,
+  },
   'above-average': {
     label: 'Above avg',
     color: 'bg-black/5 text-black/50 border-black/10 dark:bg-white/5 dark:text-white/50 dark:border-white/15',
+    icon: null,
   },
-  unknown: { label: 'New route', color: 'bg-black/5 text-black/40 border-black/8 dark:bg-white/5 dark:text-white/40 dark:border-white/10' },
+  unknown: {
+    label: 'New route',
+    color: 'bg-black/5 text-black/35 border-black/8 dark:bg-white/5 dark:text-white/35 dark:border-white/10',
+    icon: null,
+  },
 };
 
 export function DealBadge({ rating, percent }: Props) {
@@ -25,7 +42,7 @@ export function DealBadge({ rating, percent }: Props) {
     <span
       className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${config.color}`}
     >
-      {rating === 'great' && '✓ '}
+      {config.icon && <span>{config.icon}</span>}
       {config.label}
       {percent !== null && percent > 0 && ` +${Math.round(percent)}%`}
       {percent !== null && percent <= 0 && ` ${Math.round(percent)}%`}

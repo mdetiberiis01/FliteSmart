@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { SearchResult } from '@/types/search';
 import { FlightCard } from './FlightCard';
 import { FlightRow } from './FlightRow';
 import { SortFilterBar, ViewMode } from './SortFilterBar';
-import { Skeleton } from '@/components/ui/skeleton';
+import { FlightCardSkeleton, FlightRowSkeleton } from './FlightCardSkeleton';
 
 type SortKey = 'price' | 'date' | 'deal';
 
@@ -40,26 +41,55 @@ export function ResultsGrid({ results, isLoading }: Props) {
     return (
       <div>
         <div className="h-10 mb-6" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="glass-card rounded-2xl p-5 space-y-3">
-              <Skeleton className="h-6 w-3/4 bg-black/8 dark:bg-white/10" />
-              <Skeleton className="h-4 w-1/2 bg-black/8 dark:bg-white/10" />
-              <Skeleton className="h-8 w-full bg-black/8 dark:bg-white/10" />
-              <Skeleton className="h-12 w-full bg-black/8 dark:bg-white/10" />
-            </div>
-          ))}
-        </div>
+        {viewMode === 'tiles' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <FlightCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <FlightRowSkeleton key={i} />
+            ))}
+          </div>
+        )}
       </div>
     );
   }
 
   if (!results.length) {
     return (
-      <div className="text-center py-16">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="text-center py-20"
+      >
+        {/* Plane + magnifying glass SVG illustration */}
+        <div className="flex justify-center mb-6">
+          <div className="relative">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" className="text-black/10 dark:text-white/10" aria-hidden="true">
+              <circle cx="32" cy="32" r="30" stroke="currentColor" strokeWidth="2" />
+              <path d="M38 19.2 36 11l3.5-3.5C41 6 41 4 39 2c-2-2-4-2-5.5-.5L30 5l-8.2 1.2c-.5.1-.9.5-.7 1l2.3 4c.3.5.9.7 1.5.5L29 10.5 31 13l-2 3.5c-.3.5-.1 1.1.4 1.4l4 2.3c.5.2 1 0 1-.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="44" cy="44" r="10" stroke="currentColor" strokeWidth="2" />
+              <path d="m51 51 5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+        </div>
         <h3 className="text-black dark:text-white text-xl font-semibold mb-2">No flights found</h3>
-        <p className="text-black/50 dark:text-white/50">Try a different destination or time period</p>
-      </div>
+        <p className="text-black/50 dark:text-white/50 text-sm max-w-xs mx-auto mb-6">
+          We couldn't find flights for this search. Try a different destination, time period, or remove filters.
+        </p>
+        <div className="flex items-center justify-center gap-3">
+          <a
+            href="/"
+            className="px-5 py-2.5 rounded-xl bg-black dark:bg-white text-white dark:text-black text-sm font-medium hover:bg-black/80 dark:hover:bg-white/80 transition"
+          >
+            New search
+          </a>
+        </div>
+      </motion.div>
     );
   }
 
@@ -90,9 +120,9 @@ export function ResultsGrid({ results, isLoading }: Props) {
       )}
 
       {filterStops !== null && displayResults.length === 0 && (
-        <div className="text-center py-8 text-black/50 dark:text-white/50">
+        <div className="text-center py-8 text-black/50 dark:text-white/50 text-sm">
           No flights match this filter.{' '}
-          <button onClick={() => setFilterStops(null)} className="text-black dark:text-white underline">
+          <button onClick={() => setFilterStops(null)} className="text-black dark:text-white underline underline-offset-2">
             Clear filter
           </button>
         </div>

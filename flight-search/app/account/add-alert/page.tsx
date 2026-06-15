@@ -1,14 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import { getUser } from '@/lib/supabase/auth';
 import { OriginInput } from '@/components/search/OriginInput';
 import { DestinationInput } from '@/components/search/DestinationInput';
 import { DateFlexibilityPicker } from '@/components/search/DateFlexibilityPicker';
 import { Nav } from '@/components/ui/Nav';
+import { Footer } from '@/components/ui/Footer';
 import type { SearchParams } from '@/types/search';
 import type { User } from '@supabase/supabase-js';
 
@@ -17,12 +19,13 @@ type Flexibility = SearchParams['flexibility'];
 
 const TRIP_DAY_PRESETS = [3, 5, 7, 10, 14, 21];
 
-export default function AddAlertPage() {
+function AddAlertContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
-  const [origin, setOrigin] = useState('');
-  const [originName, setOriginName] = useState('');
-  const [destination, setDestination] = useState('');
+  const [origin, setOrigin] = useState(searchParams.get('origin') || '');
+  const [originName, setOriginName] = useState(searchParams.get('originName') || '');
+  const [destination, setDestination] = useState(searchParams.get('destination') || '');
   const [maxPrice, setMaxPrice] = useState('');
   const [flexibility, setFlexibility] = useState<Flexibility>('anytime');
   const [customDateStart, setCustomDateStart] = useState('');
@@ -73,9 +76,11 @@ export default function AddAlertPage() {
       }
 
       setStatus('success');
+      toast.success('Price alert created');
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
       setStatus('error');
+      toast.error(err instanceof Error ? err.message : 'Something went wrong');
     }
   }
 
@@ -219,10 +224,16 @@ export default function AddAlertPage() {
         </div>
       </section>
 
-      <footer className="border-t border-black/8 dark:border-white/8 py-8 px-6 text-center text-xs text-black/35 dark:text-white/35">
-        © {new Date().getFullYear()} FliteSmart · Prices sourced via Kiwi.com · Not affiliated with any airline
-      </footer>
+      <Footer />
 
     </div>
+  );
+}
+
+export default function AddAlertPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <AddAlertContent />
+    </Suspense>
   );
 }

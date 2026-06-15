@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { getUser, updateHomeAirport, updateName } from '@/lib/supabase/auth';
 import { getUserAlerts, deactivateAlert, deleteAlert, reactivateAlert, UserAlert } from '@/lib/supabase/user-alerts';
 import { Nav } from '@/components/ui/Nav';
+import { Footer } from '@/components/ui/Footer';
 import { OriginInput } from '@/components/search/OriginInput';
 import type { User } from '@supabase/supabase-js';
 
@@ -63,8 +65,9 @@ export default function AccountPage() {
       setEditingName(false);
       setNameSaved(true);
       setTimeout(() => setNameSaved(false), 2500);
+      toast.success('Name updated');
     } catch {
-      // ignore
+      toast.error('Failed to update name');
     } finally {
       setSavingName(false);
     }
@@ -77,8 +80,9 @@ export default function AccountPage() {
       await updateHomeAirport(homeAirport, homeAirportName || homeAirport);
       setAirportSaved(true);
       setTimeout(() => setAirportSaved(false), 2500);
+      toast.success('Home airport saved');
     } catch {
-      // ignore
+      toast.error('Failed to save airport');
     } finally {
       setSavingAirport(false);
     }
@@ -87,16 +91,19 @@ export default function AccountPage() {
   async function handleDeactivate(id: string) {
     await deactivateAlert(id);
     setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, is_active: false } : a)));
+    toast.success('Alert paused');
   }
 
   async function handleDelete(id: string) {
     await deleteAlert(id);
     setAlerts((prev) => prev.filter((a) => a.id !== id));
+    toast.success('Alert deleted');
   }
 
   async function handleReactivate(id: string) {
     await reactivateAlert(id);
     setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, is_active: true } : a)));
+    toast.success('Alert reactivated');
   }
 
   const name = nameValue || (user?.user_metadata?.full_name as string | undefined);
@@ -308,9 +315,7 @@ export default function AccountPage() {
         </div>
       </section>
 
-      <footer className="border-t border-black/8 dark:border-white/8 py-8 px-6 text-center text-xs text-black/35 dark:text-white/35">
-        © {new Date().getFullYear()} FliteSmart · Prices sourced via Kiwi.com · Not affiliated with any airline
-      </footer>
+      <Footer />
     </div>
   );
 }

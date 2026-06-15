@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { TrendingDown, Zap, Mail } from 'lucide-react';
 import { Nav } from '@/components/ui/Nav';
+import { Footer } from '@/components/ui/Footer';
 import { OriginInput } from '@/components/search/OriginInput';
 import { DestinationInput } from '@/components/search/DestinationInput';
 import { useAuth } from '@/lib/auth-context';
@@ -230,24 +232,24 @@ export default function AlertsPage() {
           </div>
 
           {/* Feature bullets */}
-          <ul className="mt-8 space-y-2 text-sm text-black/50 dark:text-white/50 text-center">
-            <li className="flex items-center justify-center gap-2">
-              <span className="text-base">📉</span> Alerts when price drops below your max
-            </li>
-            <li className="flex items-center justify-center gap-2">
-              <span className="text-base">⚡</span> Flash deals 30%+ below the 12-month average
-            </li>
-            <li className="flex items-center justify-center gap-2">
-              <span className="text-base">📬</span> Weekly digest of best prices <span className="text-black/30 dark:text-white/30">(coming soon)</span>
-            </li>
+          <ul className="mt-8 space-y-3 text-sm text-black/50 dark:text-white/50">
+            {[
+              { Icon: TrendingDown, text: 'Alerts when price drops below your max' },
+              { Icon: Zap, text: 'Flash deals 30%+ below the 12-month average' },
+              { Icon: Mail, text: <>Weekly digest of best prices <span className="text-black/30 dark:text-white/30">(coming soon)</span></> },
+            ].map(({ Icon, text }, i) => (
+              <li key={i} className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center shrink-0">
+                  <Icon className="w-3.5 h-3.5 text-sky-500" strokeWidth={2} />
+                </div>
+                {text}
+              </li>
+            ))}
           </ul>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-black/8 dark:border-white/8 py-8 px-6 text-center text-xs text-black/35 dark:text-white/35 mt-auto">
-        © {new Date().getFullYear()} FliteSmart · Prices sourced via Kiwi.com · Not affiliated with any airline
-      </footer>
+      <Footer />
 
     </div>
   );

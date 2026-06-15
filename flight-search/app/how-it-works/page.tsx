@@ -1,24 +1,26 @@
 import Link from 'next/link';
+import { CalendarDays, TrendingUp, Tag, Bell } from 'lucide-react';
 import { Nav } from '@/components/ui/Nav';
+import { Footer } from '@/components/ui/Footer';
 
 const SECTIONS = [
   {
-    icon: '📅',
+    Icon: CalendarDays,
     title: 'Flexible Date Search',
     desc: 'Search by season (Spring, Summer, Fall, Winter) or Anytime — no need to lock in exact dates to discover great prices. We scan the full window and surface the cheapest results.',
   },
   {
-    icon: '📈',
+    Icon: TrendingUp,
     title: '12-Month Price History',
     desc: 'Every result shows a sparkline of prices over the past year. You can instantly see if a price is a genuine low or just average.',
   },
   {
-    icon: '🏷️',
+    Icon: Tag,
     title: 'Deal Ratings',
     desc: "We compare each price to its 12-month average and label it: Great, Good, Fair, or High. No guessing whether you're getting a deal.",
   },
   {
-    icon: '🔔',
+    Icon: Bell,
     title: 'Price Alerts',
     desc: "Set a max price for any route. We'll email you when prices drop below it, or when we spot an unusually cheap deal.",
   },
@@ -52,7 +54,9 @@ export default function HowItWorksPage() {
               key={s.title}
               className="flex gap-6 p-7 rounded-2xl border border-black/8 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] hover:border-black/15 dark:hover:border-white/20 transition"
             >
-              <div className="shrink-0 text-4xl mt-0.5">{s.icon}</div>
+              <div className="shrink-0 mt-0.5 w-12 h-12 rounded-xl bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center">
+                <s.Icon className="w-6 h-6 text-sky-500" strokeWidth={1.75} />
+              </div>
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <span className="text-xs font-mono text-black/30 dark:text-white/30">{String(i + 1).padStart(2, '0')}</span>
@@ -76,11 +80,7 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-black/8 dark:border-white/8 py-8 px-6 text-center text-xs text-black/35 dark:text-white/35">
-        © {new Date().getFullYear()} FliteSmart · Prices sourced via Kiwi.com · Not affiliated with any airline
-      </footer>
-
+      <Footer />
     </div>
   );
 }

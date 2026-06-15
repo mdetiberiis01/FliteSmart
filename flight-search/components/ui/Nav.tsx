@@ -53,8 +53,11 @@ export function Nav({ activePage }: NavProps) {
     <header className="relative z-10 border-b border-black/8 dark:border-white/10 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between">
         <div className="flex items-center gap-6 md:gap-10">
-          <Link href="/" className="font-bold text-base md:text-lg tracking-tight text-black dark:text-white">
-            ✈ FliteSmart
+          <Link href="/" className="flex items-center gap-2 font-bold text-base md:text-lg tracking-tight text-black dark:text-white">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-sky-500" aria-hidden="true">
+              <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 2c-2-2-4-2-5.5-.5L10 5 1.8 6.2c-.5.1-.9.5-.7 1l2.3 4c.3.5.9.7 1.5.5L9 10.5 11 13l-2 3.5c-.3.5-.1 1.1.4 1.4l4 2.3c.5.2 1 0 1-.5z" />
+            </svg>
+            FliteSmart
           </Link>
           <nav className="hidden md:flex items-center gap-7 text-sm">
             <Link href="/" className={`${activePage === 'flights' ? activeClass : dimClass} ${linkClass}`}>Flights</Link>
