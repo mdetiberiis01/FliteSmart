@@ -60,14 +60,17 @@ export default function MapInner({ results, origin }: Props) {
       const originCoords = getAirportCoords(origin);
       const destPoints: [number, number][] = [];
 
-      // Deduplicate: one marker per destination showing the cheapest result
-      const cheapestByDest = new Map<string, typeof results[number]>();
+      // Deduplicate: one marker per city showing the cheapest result across all airports
+      // (e.g. NRT + HND both collapse into one Tokyo marker)
+      const cheapestByCity = new Map<string, typeof results[number]>();
       for (const result of results) {
-        const existing = cheapestByDest.get(result.destination);
+        const cityKey = (result.destinationCity || result.destination).toLowerCase();
+        const existing = cheapestByCity.get(cityKey);
         if (!existing || result.price < existing.price) {
-          cheapestByDest.set(result.destination, result);
+          cheapestByCity.set(cityKey, result);
         }
       }
+      const cheapestByDest = cheapestByCity;
 
       for (const result of cheapestByDest.values()) {
         const destCoords = getAirportCoords(result.destination);
