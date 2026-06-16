@@ -23,14 +23,19 @@ const STATIC_TRENDING: TrendingDest[] = [
 interface Props {
   onSelect: (dest: TrendingDest) => void;
   homeAirport?: string;
+  selectedOrigin?: string;
+  selectedOriginName?: string;
 }
 
-export function TrendingDestinations({ onSelect, homeAirport }: Props) {
+export function TrendingDestinations({ onSelect, homeAirport, selectedOrigin, selectedOriginName }: Props) {
   const [destinations, setDestinations] = useState<TrendingDest[]>(STATIC_TRENDING);
   const [loading, setLoading] = useState(false);
 
+  // Prefer the user's actively selected departure airport; fall back to home airport
+  const fetchOrigin = selectedOrigin || homeAirport;
+
   useEffect(() => {
-    if (!homeAirport) {
+    if (!fetchOrigin) {
       setDestinations(STATIC_TRENDING);
       return;
     }
@@ -38,7 +43,7 @@ export function TrendingDestinations({ onSelect, homeAirport }: Props) {
     let cancelled = false;
     setLoading(true);
 
-    fetch(`/api/trending?origin=${encodeURIComponent(homeAirport)}`)
+    fetch(`/api/trending?origin=${encodeURIComponent(fetchOrigin)}`)
       .then((r) => r.json())
       .then((data) => {
         if (cancelled) return;
@@ -56,10 +61,11 @@ export function TrendingDestinations({ onSelect, homeAirport }: Props) {
       });
 
     return () => { cancelled = true; };
-  }, [homeAirport]);
+  }, [fetchOrigin]);
 
-  const headerLabel = homeAirport && !loading
-    ? `Cheap flights from ${homeAirport}`
+  const displayLabel = selectedOriginName || selectedOrigin || homeAirport;
+  const headerLabel = displayLabel && !loading
+    ? `Great Deals from ${displayLabel}`
     : 'Trending destinations';
 
   return (

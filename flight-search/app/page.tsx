@@ -136,7 +136,12 @@ export default function Home() {
               )}
               <SearchForm hook={hook} />
             </div>
-            <TrendingDestinations onSelect={handleTrendingSelect} homeAirport={homeAirport} />
+            <TrendingDestinations
+              onSelect={handleTrendingSelect}
+              homeAirport={homeAirport}
+              selectedOrigin={hook.form.origin || undefined}
+              selectedOriginName={hook.form.originName || hook.form.origin || undefined}
+            />
           </motion.div>
 
         </div>
