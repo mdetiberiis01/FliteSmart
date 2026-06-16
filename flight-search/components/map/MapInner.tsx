@@ -60,27 +60,41 @@ export default function MapInner({ results, origin }: Props) {
       const originCoords = getAirportCoords(origin);
       const destPoints: [number, number][] = [];
 
-      // Draw destination markers
+      // Deduplicate: one marker per destination showing the cheapest result
+      const cheapestByDest = new Map<string, typeof results[number]>();
       for (const result of results) {
+        const existing = cheapestByDest.get(result.destination);
+        if (!existing || result.price < existing.price) {
+          cheapestByDest.set(result.destination, result);
+        }
+      }
+
+      for (const result of cheapestByDest.values()) {
         const destCoords = getAirportCoords(result.destination);
         if (!destCoords) continue;
 
         destPoints.push(destCoords);
 
         const color = dealColor(result.dealRating);
+        const priceLabel = result.price >= 1000
+          ? '$' + (result.price / 1000).toFixed(result.price % 1000 === 0 ? 0 : 1) + 'k'
+          : '$' + result.price;
+
         const icon = L.divIcon({
           className: '',
           html: `<div style="
-            width:28px;height:28px;border-radius:50%;
             background:${color};
-            border:2px solid rgba(255,255,255,0.8);
-            display:flex;align-items:center;justify-content:center;
-            font-size:9px;font-weight:700;color:#000;
+            border:2px solid rgba(255,255,255,0.9);
+            border-radius:20px;
+            padding:3px 8px;
+            font-size:11px;font-weight:800;color:#000;
             box-shadow:0 2px 8px rgba(0,0,0,0.5);
+            white-space:nowrap;
             cursor:pointer;
-          ">$${result.price >= 1000 ? Math.round(result.price / 1000) + 'k' : result.price}</div>`,
-          iconSize: [28, 28],
-          iconAnchor: [14, 14],
+            line-height:1.4;
+          ">${priceLabel}</div>`,
+          iconSize: [0, 0],
+          iconAnchor: [0, 0],
         });
 
         const depDate = result.departureDate
