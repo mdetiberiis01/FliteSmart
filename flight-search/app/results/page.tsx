@@ -20,6 +20,7 @@ function ResultsContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(true);
+  const [dismissedDemoBanner, setDismissedDemoBanner] = useState(false);
 
   const origin = searchParams.get('origin') || '';
   const originName = searchParams.get('originName') || origin;
@@ -116,6 +117,20 @@ function ResultsContent() {
           </motion.div>
         )}
 
+        {/* Demo data banner */}
+        {!isLoading && !error && !dismissedDemoBanner && results.length > 0 && results.every((r) => r.dataSource === 'demo') && (
+          <div className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-700">
+            <span>Showing sample prices — configure API keys to see live fares.</span>
+            <button
+              onClick={() => setDismissedDemoBanner(true)}
+              className="shrink-0 text-yellow-600 hover:text-yellow-900 transition"
+              aria-label="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* Results header */}
         {!isLoading && !error && (
           <motion.div
@@ -126,7 +141,7 @@ function ResultsContent() {
             <h2 className="text-slate-900 text-2xl font-bold">
               {results.length > 0
                 ? `${results.length} flight${results.length !== 1 ? 's' : ''} found`
-                : isLoading ? 'Searching...' : 'No flights found'}
+                : 'Searching...'}
             </h2>
             <div className="flex flex-wrap items-center gap-2 mt-2">
               <span className="text-slate-500 text-sm">From {originName}</span>
