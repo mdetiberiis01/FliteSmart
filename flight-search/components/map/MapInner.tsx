@@ -86,18 +86,18 @@ export default function MapInner({ results, origin }: Props) {
         const icon = L.divIcon({
           className: '',
           html: `<div style="
+            width:46px;height:46px;border-radius:50%;
             background:${color};
-            border:2px solid rgba(255,255,255,0.9);
-            border-radius:20px;
-            padding:3px 8px;
-            font-size:11px;font-weight:800;color:#000;
-            box-shadow:0 2px 8px rgba(0,0,0,0.5);
-            white-space:nowrap;
+            border:2.5px solid rgba(255,255,255,0.9);
+            display:flex;align-items:center;justify-content:center;
+            font-size:10px;font-weight:800;color:#000;
+            box-shadow:0 2px 10px rgba(0,0,0,0.45);
             cursor:pointer;
-            line-height:1.4;
+            text-align:center;
+            line-height:1;
           ">${priceLabel}</div>`,
-          iconSize: [0, 0],
-          iconAnchor: [0, 0],
+          iconSize: [46, 46],
+          iconAnchor: [23, 23],
         });
 
         const depDate = result.departureDate
