@@ -27,14 +27,19 @@ const GOOGLE_CABIN: Record<string, string> = { economy: 'e', premium_economy: 'p
 
 export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1 }: Props) {
   function handleClick() {
-    const origin = result.origin || '';
-    const dest = result.destination || '';
-    const dep = result.departureDate || '';
-    const cabin = GOOGLE_CABIN[cabinClass] ?? 'e';
-    const legs = result.returnDate
-      ? `${origin}.${dest}.${dep}*${dest}.${origin}.${result.returnDate}`
-      : `${origin}.${dest}.${dep}`;
-    const url = `https://www.google.com/travel/flights#flt=${legs};c:USD;e:${travelers};t:${cabin}`;
+    // Use bookingUrl only if it's already a Google Flights link (from SerpAPI)
+    const url = result.bookingUrl?.startsWith('https://www.google.com')
+      ? result.bookingUrl
+      : (() => {
+          const origin = result.origin || '';
+          const dest = result.destination || '';
+          const dep = result.departureDate || '';
+          const cabin = GOOGLE_CABIN[cabinClass] ?? 'e';
+          const legs = result.returnDate
+            ? `${origin}.${dest}.${dep}*${dest}.${origin}.${result.returnDate}`
+            : `${origin}.${dest}.${dep}`;
+          return `https://www.google.com/travel/flights#flt=${legs};c:USD;e:${travelers};t:${cabin}`;
+        })();
     window.open(url, '_blank', 'noopener,noreferrer');
   }
 
