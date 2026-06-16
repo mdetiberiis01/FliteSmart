@@ -25,6 +25,47 @@ function minutesToIsoDuration(minutes: number): string {
   return m > 0 ? `PT${h}H${m}M` : `PT${h}H`;
 }
 
+function addDays(date: string, days: number): string {
+  const d = new Date(date + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split('T')[0];
+}
+
+async function fetchSerpApi(
+  origin: string,
+  destination: string,
+  departureDate: string,
+  returnDate?: string
+): Promise<SerpApiFlightsResponse | null> {
+  const url = new URL('https://serpapi.com/search');
+  url.searchParams.set('engine', 'google_flights');
+  url.searchParams.set('departure_id', origin);
+  url.searchParams.set('arrival_id', destination);
+  url.searchParams.set('outbound_date', departureDate);
+  if (returnDate) {
+    url.searchParams.set('type', '1');
+    url.searchParams.set('return_date', returnDate);
+  } else {
+    url.searchParams.set('type', '2');
+  }
+  url.searchParams.set('currency', 'USD');
+  url.searchParams.set('hl', 'en');
+  url.searchParams.set('gl', 'us');
+  url.searchParams.set('api_key', SERPAPI_KEY);
+
+  const response = await fetch(url.toString());
+  if (!response.ok) {
+    console.error('[serpapi]', response.status, await response.text().catch(() => ''));
+    return null;
+  }
+  const data: SerpApiFlightsResponse = await response.json();
+  if (data.error) {
+    console.error('[serpapi]', data.error);
+    return null;
+  }
+  return data;
+}
+
 export async function searchFlights(
   origin: string,
   destination: string,
@@ -34,32 +75,16 @@ export async function searchFlights(
   if (!SERPAPI_KEY) return { flights: [], pricePoints: [] };
 
   try {
-    const url = new URL('https://serpapi.com/search');
-    url.searchParams.set('engine', 'google_flights');
-    url.searchParams.set('departure_id', origin);
-    url.searchParams.set('arrival_id', destination);
-    url.searchParams.set('outbound_date', departureDate);
-    if (returnDate) {
-      url.searchParams.set('type', '1'); // round trip
-      url.searchParams.set('return_date', returnDate);
-    } else {
-      url.searchParams.set('type', '2'); // one way
+    // Try the requested date, then +3 and +5 days if the specific day has no flights
+    const offsets = [0, 3, 5];
+    let data: SerpApiFlightsResponse | null = null;
+    for (const offset of offsets) {
+      const dep = addDays(departureDate, offset);
+      const ret = returnDate ? addDays(returnDate, offset) : undefined;
+      data = await fetchSerpApi(origin, destination, dep, ret);
+      if (data && ((data.best_flights?.length ?? 0) + (data.other_flights?.length ?? 0)) > 0) break;
     }
-    url.searchParams.set('currency', 'USD');
-    url.searchParams.set('hl', 'en');
-    url.searchParams.set('api_key', SERPAPI_KEY);
-
-    const response = await fetch(url.toString());
-    if (!response.ok) {
-      console.error('[serpapi]', response.status, await response.text().catch(() => ''));
-      return { flights: [], pricePoints: [] };
-    }
-
-    const data: SerpApiFlightsResponse = await response.json();
-    if (data.error) {
-      console.error('[serpapi]', data.error);
-      return { flights: [], pricePoints: [] };
-    }
+    if (!data) return { flights: [], pricePoints: [] };
 
     const itineraries = [...(data.best_flights ?? []), ...(data.other_flights ?? [])];
     const googleFlightsUrl = data.search_metadata?.google_flights_url;
