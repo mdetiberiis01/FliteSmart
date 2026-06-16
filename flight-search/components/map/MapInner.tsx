@@ -23,6 +23,34 @@ function dealColor(rating: string | null | undefined): string {
 const TILE_DARK  = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 const TILE_LIGHT = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
 
+// Returns pixel size and font size for a given zoom level
+function markerDimensions(zoom: number): { size: number; fontSize: number; showPrice: boolean } {
+  const size = Math.round(Math.max(14, Math.min(52, zoom * 4.5 - 4)));
+  const fontSize = Math.round(Math.max(8, Math.min(12, zoom * 1.2 - 2)));
+  const showPrice = size >= 30;
+  return { size, fontSize, showPrice };
+}
+
+type LeafletType = typeof import('leaflet');
+
+function makeIcon(L: LeafletType, color: string, priceLabel: string, zoom: number) {
+  const { size, fontSize, showPrice } = markerDimensions(zoom);
+  return L.divIcon({
+    className: '',
+    html: `<div style="
+      width:${size}px;height:${size}px;border-radius:50%;
+      background:${color};
+      border:2px solid rgba(255,255,255,0.9);
+      display:flex;align-items:center;justify-content:center;
+      font-size:${fontSize}px;font-weight:800;color:#000;
+      box-shadow:0 2px 8px rgba(0,0,0,0.45);
+      cursor:pointer;text-align:center;line-height:1;
+    ">${showPrice ? priceLabel : ''}</div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+}
+
 export default function MapInner({ results, origin }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<unknown>(null);
@@ -34,7 +62,6 @@ export default function MapInner({ results, origin }: Props) {
     import('leaflet').then((L) => {
       if (!mapRef.current || mapInstanceRef.current) return;
 
-      // Fix default marker icons
       delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -57,11 +84,7 @@ export default function MapInner({ results, origin }: Props) {
       mapInstanceRef.current = map;
       tileLayerRef.current = tileLayer;
 
-      const originCoords = getAirportCoords(origin);
-      const destPoints: [number, number][] = [];
-
-      // Deduplicate: one marker per city showing the cheapest result across all airports
-      // (e.g. NRT + HND both collapse into one Tokyo marker)
+      // Deduplicate by city — one marker per city, cheapest price
       const cheapestByCity = new Map<string, typeof results[number]>();
       for (const result of results) {
         const cityKey = (result.destinationCity || result.destination).toLowerCase();
@@ -70,9 +93,13 @@ export default function MapInner({ results, origin }: Props) {
           cheapestByCity.set(cityKey, result);
         }
       }
-      const cheapestByDest = cheapestByCity;
 
-      for (const result of cheapestByDest.values()) {
+      // Build marker data — store marker refs so we can resize on zoom
+      type MarkerEntry = { marker: ReturnType<LeafletType['marker']>; color: string; priceLabel: string };
+      const markerEntries: MarkerEntry[] = [];
+      const destPoints: [number, number][] = [];
+
+      for (const result of cheapestByCity.values()) {
         const destCoords = getAirportCoords(result.destination);
         if (!destCoords) continue;
 
@@ -83,35 +110,17 @@ export default function MapInner({ results, origin }: Props) {
           ? '$' + (result.price / 1000).toFixed(result.price % 1000 === 0 ? 0 : 1) + 'k'
           : '$' + result.price;
 
-        const icon = L.divIcon({
-          className: '',
-          html: `<div style="
-            width:46px;height:46px;border-radius:50%;
-            background:${color};
-            border:2.5px solid rgba(255,255,255,0.9);
-            display:flex;align-items:center;justify-content:center;
-            font-size:10px;font-weight:800;color:#000;
-            box-shadow:0 2px 10px rgba(0,0,0,0.45);
-            cursor:pointer;
-            text-align:center;
-            line-height:1;
-          ">${priceLabel}</div>`,
-          iconSize: [46, 46],
-          iconAnchor: [23, 23],
-        });
-
         const depDate = result.departureDate
           ? new Date(result.departureDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
           : '';
         const retDate = result.returnDate
           ? new Date(result.returnDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
           : '';
-
         const dealLabel = result.dealRating
           ? `<span style="background:${color};color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;">${result.dealRating} deal</span>`
           : '';
 
-        L.marker(destCoords, { icon })
+        const marker = L.marker(destCoords, { icon: makeIcon(L, color, priceLabel, 2) })
           .addTo(map)
           .bindPopup(`
             <div style="font-family:system-ui,sans-serif;min-width:160px;">
@@ -124,16 +133,28 @@ export default function MapInner({ results, origin }: Props) {
               ${result.stops === 0 ? '<div style="font-size:10px;color:#34d399;margin-top:2px;">Nonstop</div>' : `<div style="font-size:10px;color:#888;margin-top:2px;">${result.stops} stop${result.stops !== 1 ? 's' : ''}</div>`}
             </div>
           `, { maxWidth: 220 });
+
+        markerEntries.push({ marker, color, priceLabel });
       }
 
-      // Origin marker
+      // Resize all markers when zoom changes
+      function updateMarkerSizes() {
+        const zoom = map.getZoom();
+        for (const { marker, color, priceLabel } of markerEntries) {
+          marker.setIcon(makeIcon(L, color, priceLabel, zoom));
+        }
+      }
+
+      map.on('zoomend', updateMarkerSizes);
+
+      // Origin marker (fixed small dot)
+      const originCoords = getAirportCoords(origin);
       if (originCoords) {
         const originIcon = L.divIcon({
           className: '',
           html: `<div style="
             width:14px;height:14px;border-radius:50%;
             background:#fff;
-            border:3px solid #ffffff;
             box-shadow:0 0 0 3px rgba(0,0,0,0.2),0 2px 8px rgba(0,0,0,0.5);
           "></div>`,
           iconSize: [14, 14],
@@ -144,14 +165,15 @@ export default function MapInner({ results, origin }: Props) {
           .bindPopup(`<div style="font-family:system-ui,sans-serif;font-weight:700;">${origin} — Origin</div>`);
       }
 
-      // Fit map to destination points only (not origin)
+      // Fit bounds, then set initial marker sizes based on resulting zoom
       if (destPoints.length > 1) {
-        map.fitBounds(L.latLngBounds(destPoints), { padding: [50, 50] });
+        map.fitBounds(L.latLngBounds(destPoints), { padding: [50, 50], animate: false });
       } else if (destPoints.length === 1) {
-        map.setView(destPoints[0], 6);
+        map.setView(destPoints[0], 6, { animate: false });
       }
+      updateMarkerSizes();
 
-      // Watch for theme changes and swap tile layer
+      // Theme observer
       const observer = new MutationObserver(() => {
         const dark = document.documentElement.classList.contains('dark');
         if (tileLayerRef.current) {
@@ -159,9 +181,7 @@ export default function MapInner({ results, origin }: Props) {
         }
       });
       observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-      const cleanup = () => observer.disconnect();
-      (mapInstanceRef.current as { _themeObserverCleanup?: () => void })._themeObserverCleanup = cleanup;
+      (mapInstanceRef.current as { _themeObserverCleanup?: () => void })._themeObserverCleanup = () => observer.disconnect();
     });
 
     return () => {
