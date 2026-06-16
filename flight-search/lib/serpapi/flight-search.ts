@@ -47,6 +47,7 @@ export async function searchFlights(
     }
     url.searchParams.set('currency', 'USD');
     url.searchParams.set('hl', 'en');
+    url.searchParams.set('gl', 'us');
     url.searchParams.set('api_key', SERPAPI_KEY);
 
     const response = await fetch(url.toString());
