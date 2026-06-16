@@ -63,8 +63,8 @@ export function BaggageInfo({ carryOn = 1, checked = 0 }: Props) {
       <div
         className={`flex items-center gap-1 px-2 py-1 rounded-md border text-xs font-medium
           ${carryOn > 0
-            ? 'border-black/20 dark:border-white/20 text-black/70 dark:text-white/70'
-            : 'border-black/10 dark:border-white/10 text-black/30 dark:text-white/30'
+            ? 'border-slate-200 text-slate-600'
+            : 'border-slate-100 text-slate-300'
           }`}
       >
         <CarryOnIcon className="w-4 h-4" />
@@ -75,8 +75,8 @@ export function BaggageInfo({ carryOn = 1, checked = 0 }: Props) {
       <div
         className={`flex items-center gap-1 px-2 py-1 rounded-md border text-xs font-medium
           ${checked > 0
-            ? 'border-black/20 dark:border-white/20 text-black/70 dark:text-white/70'
-            : 'border-black/10 dark:border-white/10 text-black/30 dark:text-white/30'
+            ? 'border-slate-200 text-slate-600'
+            : 'border-slate-100 text-slate-300'
           }`}
       >
         <CheckedBagIcon className="w-4 h-4" />

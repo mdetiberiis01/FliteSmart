@@ -25,9 +25,11 @@ const TILE_LIGHT = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.p
 
 // Returns pixel size and font size for a given zoom level
 function markerDimensions(zoom: number): { size: number; fontSize: number; showPrice: boolean } {
-  const size = Math.round(Math.max(14, Math.min(52, zoom * 4.5 - 4)));
-  const fontSize = Math.round(Math.max(8, Math.min(12, zoom * 1.2 - 2)));
-  const showPrice = size >= 30;
+  const rawSize = Math.round(Math.max(16, Math.min(68, zoom * 5.5 - 4)));
+  const showPrice = rawSize >= 17;
+  const fontSize = Math.round(Math.max(11, Math.min(16, zoom * 1.6 - 2)));
+  // When showing price, enforce a minimum diameter so the text fits inside the circle
+  const size = showPrice ? Math.max(rawSize, Math.round(fontSize * 3)) : rawSize;
   return { size, fontSize, showPrice };
 }
 
@@ -54,7 +56,6 @@ function makeIcon(L: LeafletType, color: string, priceLabel: string, zoom: numbe
 export default function MapInner({ results, origin }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<unknown>(null);
-  const tileLayerRef = useRef<unknown>(null);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -74,15 +75,13 @@ export default function MapInner({ results, origin }: Props) {
         scrollWheelZoom: false,
       }).setView([20, 0], 2);
 
-      const isDark = document.documentElement.classList.contains('dark');
-      const tileLayer = L.tileLayer(isDark ? TILE_DARK : TILE_LIGHT, {
+      L.tileLayer(TILE_LIGHT, {
         attribution: '©OpenStreetMap ©CartoDB',
         subdomains: 'abcd',
         maxZoom: 19,
       }).addTo(map);
 
       mapInstanceRef.current = map;
-      tileLayerRef.current = tileLayer;
 
       // Deduplicate by city — one marker per city, cheapest price
       const cheapestByCity = new Map<string, typeof results[number]>();
@@ -173,22 +172,11 @@ export default function MapInner({ results, origin }: Props) {
       }
       updateMarkerSizes();
 
-      // Theme observer
-      const observer = new MutationObserver(() => {
-        const dark = document.documentElement.classList.contains('dark');
-        if (tileLayerRef.current) {
-          (tileLayerRef.current as { setUrl: (url: string) => void }).setUrl(dark ? TILE_DARK : TILE_LIGHT);
-        }
-      });
-      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-      (mapInstanceRef.current as { _themeObserverCleanup?: () => void })._themeObserverCleanup = () => observer.disconnect();
     });
 
     return () => {
       if (mapInstanceRef.current) {
-        const inst = mapInstanceRef.current as { remove: () => void; _themeObserverCleanup?: () => void };
-        inst._themeObserverCleanup?.();
-        inst.remove();
+        (mapInstanceRef.current as { remove: () => void }).remove();
         mapInstanceRef.current = null;
       }
     };
@@ -196,9 +184,9 @@ export default function MapInner({ results, origin }: Props) {
   }, []);
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-black/10 dark:border-white/10 bg-[#f5f5f5] dark:bg-[#0a0a0a]">
+    <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
       <div ref={mapRef} className="h-72 w-full" />
-      <div className="flex items-center gap-4 px-4 py-2 border-t border-black/10 dark:border-white/10 text-xs text-black/40 dark:text-white/40">
+      <div className="flex items-center gap-4 px-4 py-2 border-t border-slate-200 text-xs text-slate-400">
         <span className="flex items-center gap-1.5"><span style={{ background: '#34d399', borderRadius: '50%', display: 'inline-block', width: 8, height: 8 }} /> Great deal</span>
         <span className="flex items-center gap-1.5"><span style={{ background: '#a3a3a3', borderRadius: '50%', display: 'inline-block', width: 8, height: 8 }} /> Good</span>
         <span className="flex items-center gap-1.5"><span style={{ background: '#d97706', borderRadius: '50%', display: 'inline-block', width: 8, height: 8 }} /> Fair</span>

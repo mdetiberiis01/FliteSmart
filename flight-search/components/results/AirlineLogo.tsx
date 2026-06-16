@@ -15,10 +15,10 @@ export function AirlineLogo({ code, size = 44 }: Props) {
   if (!code || failed) {
     return (
       <div
-        className="flex items-center justify-center rounded-lg bg-black/5 dark:bg-white/8 shrink-0"
+        className="flex items-center justify-center rounded-lg bg-slate-100 shrink-0"
         style={{ width: size, height: size }}
       >
-        <span className="text-xs font-bold text-black/50 dark:text-white/50 tracking-wide">
+        <span className="text-xs font-bold text-slate-400 tracking-wide">
           {code || '✈'}
         </span>
       </div>

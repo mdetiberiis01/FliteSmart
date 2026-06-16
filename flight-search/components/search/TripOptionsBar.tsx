@@ -7,7 +7,7 @@ interface Props {
   onChange: (field: 'tripType' | 'travelers' | 'cabinClass', value: string | number) => void;
 }
 
-const pillar = 'relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 transition cursor-pointer text-sm font-medium text-slate-700 dark:text-white/70 border border-slate-200 dark:border-white/10 select-none';
+const pillar = 'relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 transition cursor-pointer text-sm font-medium text-slate-700 border border-slate-200 select-none';
 
 const chevron = (
   <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" className="opacity-50 shrink-0">

@@ -194,11 +194,19 @@ const DEST_DAY_OFFSETS: Record<string, number> = {
   TUN: 13, ALG: 7,  HRG: 21,
 };
 
+const CABIN_PRICE_MULTIPLIER: Record<string, number> = {
+  economy: 1,
+  premium_economy: 1.8,
+  business: 3.5,
+  first: 6.0,
+};
+
 function makeDemoResults(
   origin: string,
   destinationCodes: string[],
   dateRanges: DateRange[],
-  tripDays: number
+  tripDays: number,
+  cabinClass = 'economy'
 ): SearchResult[] {
   const pool = DEMO_DESTINATIONS.filter((d) => destinationCodes.includes(d.iataCode));
   const selected = pool.length > 0 ? pool : DEMO_DESTINATIONS;
@@ -214,7 +222,8 @@ function makeDemoResults(
     const monthIndex = rangeStart.getMonth();
     const seasonalFactor = [1.05, 1.0, 1.02, 0.98, 1.0, 1.15, 1.2, 1.18, 1.05, 0.97, 0.95, 1.1][monthIndex];
     const destFactor = 1 + Math.sin(i * 1.7) * 0.06;
-    const price = Math.round(dest.basePrice * seasonalFactor * destFactor);
+    const cabinMultiplier = CABIN_PRICE_MULTIPLIER[cabinClass] ?? 1;
+    const price = Math.round(dest.basePrice * seasonalFactor * destFactor * cabinMultiplier);
 
     const history = makeDemoHistory(dest.basePrice, i);
     const historicalLow = Math.min(...history.map((p) => p.price));
@@ -392,7 +401,7 @@ function buildResult(
 // ---------------------------------------------------------------------------
 
 export async function orchestrateSearch(params: SearchParams, userIp?: string): Promise<SearchResult[]> {
-  const { origin, destination, flexibility, customDateStart, customDateEnd, tripDays = 7 } = params;
+  const { origin, destination, flexibility, customDateStart, customDateEnd, tripDays = 7, cabinClass = 'economy', travelers = 1 } = params;
 
   const destinationCodes = await resolveDestination(destination);
   if (!destinationCodes.length) return [];
@@ -406,7 +415,7 @@ export async function orchestrateSearch(params: SearchParams, userIp?: string): 
   // Single-dest: weekly scan for fine-grained cheapest-day detection.
   // Multi-dest: monthly scan (one date per month) to keep API usage reasonable across 8 destinations.
   const searchDates = generateSearchDates(flexibility, customDateStart, customDateEnd, isMultiDest ? 28 : 7);
-  if (!searchDates.length) return makeDemoResults(origin, destinationCodes, dateRanges, tripDays);
+  if (!searchDates.length) return makeDemoResults(origin, destinationCodes, dateRanges, tripDays, cabinClass);
 
   if (isMultiDest) {
     // Region/multi-destination: scan one date per month for each destination, push cheapest
@@ -453,7 +462,7 @@ export async function orchestrateSearch(params: SearchParams, userIp?: string): 
   const merged = mergeAndDeduplicateResults(allResults);
 
   if (merged.length === 0) {
-    return makeDemoResults(origin, destinationCodes, dateRanges, tripDays);
+    return makeDemoResults(origin, destinationCodes, dateRanges, tripDays, cabinClass);
   }
 
   return merged;

@@ -25,7 +25,7 @@ export function SearchForm({ hook: externalHook }: Props) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="bg-white dark:bg-[#111] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl shadow-slate-200/60 dark:shadow-black/40 p-6 md:p-8 w-full"
+      className="bg-white p-6 md:p-8 w-full"
     >
       {/* Trip options bar */}
       <TripOptionsBar
@@ -52,7 +52,7 @@ export function SearchForm({ hook: externalHook }: Props) {
       </div>
 
       {/* Row 2: When / Trip length */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5 pb-5 border-b border-slate-100 dark:border-white/8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5 pb-5 border-b border-slate-100">
         <DateFlexibilityPicker
           value={form.flexibility}
           customStart={form.customDateStart}
@@ -66,7 +66,7 @@ export function SearchForm({ hook: externalHook }: Props) {
 
         {/* Trip duration */}
         <div>
-          <label className="block text-sm text-slate-600 dark:text-white/60 mb-2">Trip length</label>
+          <label className="block text-sm text-slate-600 mb-2">Trip length</label>
           <div className="flex flex-wrap items-center gap-2">
             {TRIP_DAY_PRESETS.map((days) => (
               <motion.button
@@ -77,14 +77,14 @@ export function SearchForm({ hook: externalHook }: Props) {
                 onClick={() => updateField('tripDays', days)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
                   form.tripDays === days
-                    ? 'bg-sky-500 border-sky-500 text-white shadow-md shadow-sky-500/20'
-                    : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200 dark:bg-white/5 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/10'
+                    ? 'bg-brand border-brand text-white shadow-md'
+                    : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'
                 }`}
               >
                 {days}d
               </motion.button>
             ))}
-            <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-3 py-1.5">
+            <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-full px-3 py-1.5">
               <input
                 type="number"
                 min={1}
@@ -95,9 +95,9 @@ export function SearchForm({ hook: externalHook }: Props) {
                   if (!isNaN(v) && v >= 1 && v <= 90) updateField('tripDays', v);
                 }}
                 placeholder="Custom"
-                className="w-14 bg-transparent text-slate-700 dark:text-white/70 text-sm focus:outline-none placeholder-slate-400 dark:placeholder-white/30 text-center"
+                className="w-14 bg-transparent text-slate-700 text-sm focus:outline-none placeholder-slate-400 text-center"
               />
-              <span className="text-slate-400 dark:text-white/40 text-xs">days</span>
+              <span className="text-slate-400 text-xs">days</span>
             </div>
           </div>
         </div>

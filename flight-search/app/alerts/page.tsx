@@ -12,7 +12,7 @@ import Link from 'next/link';
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 
 const inputClass =
-  'w-full bg-black/5 dark:bg-white/10 border border-black/20 dark:border-white/20 rounded-xl px-4 py-3 text-black dark:text-white placeholder-black/40 dark:placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-black/30 dark:focus:ring-white/40 focus:border-transparent transition';
+  'w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition';
 
 export default function AlertsPage() {
   const router = useRouter();
@@ -41,7 +41,6 @@ export default function AlertsPage() {
     setErrorMsg('');
 
     try {
-      // 1. Create Supabase account + send confirmation email
       const signupRes = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -53,7 +52,6 @@ export default function AlertsPage() {
       }
       const { userId } = await signupRes.json();
 
-      // 2. Save the price alert
       const res = await fetch('/api/alerts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,37 +78,37 @@ export default function AlertsPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white">
 
       <Nav activePage="alerts" />
 
       {/* Hero */}
-      <section className="bg-gradient-to-b from-sky-50 via-sky-50/40 to-white dark:from-slate-900 dark:via-slate-900/40 dark:to-[#0a0a0a] pt-16 pb-24 px-4">
+      <section className="bg-slate-50 border-b border-slate-200 pt-16 pb-24 px-4">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-10">
-            <h1 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-3 tracking-tight">
+            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3 tracking-tight">
               Price Alerts
             </h1>
-            <p className="text-black/50 dark:text-white/50 text-lg max-w-lg mx-auto">
+            <p className="text-slate-500 text-lg max-w-lg mx-auto">
               Create a free account and we&apos;ll email you when prices drop below your target.
             </p>
           </div>
 
           {/* Card */}
-          <div className="bg-white dark:bg-white/[0.04] border border-black/10 dark:border-white/10 rounded-2xl shadow-sm p-8">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-8">
             {status === 'success' ? (
               <div className="text-center py-6">
                 <div className="text-4xl mb-4">✓</div>
-                <h2 className="text-xl font-semibold text-black dark:text-white mb-2">Account created!</h2>
-                <p className="text-black/55 dark:text-white/55 text-sm mb-1">
-                  We sent a confirmation to <span className="font-medium text-black dark:text-white">{email}</span>.
+                <h2 className="text-xl font-semibold text-slate-900 mb-2">Account created!</h2>
+                <p className="text-slate-500 text-sm mb-1">
+                  We sent a confirmation to <span className="font-medium text-slate-900">{email}</span>.
                 </p>
-                <p className="text-black/55 dark:text-white/55 text-sm">
+                <p className="text-slate-500 text-sm">
                   You&apos;ll hear from us when prices drop. You can sign in anytime to manage your alerts.
                 </p>
                 <button
                   onClick={() => router.push('/account')}
-                  className="mt-6 px-6 py-2.5 rounded-xl bg-black dark:bg-white text-white dark:text-black text-sm font-semibold hover:bg-black/80 dark:hover:bg-white/80 transition"
+                  className="mt-6 px-6 py-2.5 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-dark transition"
                 >
                   Go to my account
                 </button>
@@ -120,7 +118,7 @@ export default function AlertsPage() {
                 {/* Name + Email */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-black/60 dark:text-white/60 mb-1">Name</label>
+                    <label className="block text-sm text-slate-600 mb-1">Name</label>
                     <input
                       type="text"
                       required
@@ -131,7 +129,7 @@ export default function AlertsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-black/60 dark:text-white/60 mb-1">Email</label>
+                    <label className="block text-sm text-slate-600 mb-1">Email</label>
                     <input
                       type="email"
                       required
@@ -145,7 +143,7 @@ export default function AlertsPage() {
 
                 {/* Password */}
                 <div>
-                  <label className="block text-sm text-black/60 dark:text-white/60 mb-1">Password</label>
+                  <label className="block text-sm text-slate-600 mb-1">Password</label>
                   <input
                     type="password"
                     required
@@ -159,7 +157,7 @@ export default function AlertsPage() {
 
                 {/* Home airport */}
                 <div>
-                  <label className="block text-sm text-black/60 dark:text-white/60 mb-1">Home airport <span className="text-black/30 dark:text-white/30">(optional)</span></label>
+                  <label className="block text-sm text-slate-600 mb-1">Home airport <span className="text-slate-400">(optional)</span></label>
                   <OriginInput
                     value={homeAirport}
                     displayName={homeAirportName}
@@ -170,8 +168,8 @@ export default function AlertsPage() {
                   />
                 </div>
 
-                <div className="border-t border-black/8 dark:border-white/8 pt-5">
-                  <p className="text-xs text-black/40 dark:text-white/40 mb-4 uppercase tracking-wide font-medium">Alert settings</p>
+                <div className="border-t border-slate-200 pt-5">
+                  <p className="text-xs text-slate-400 mb-4 uppercase tracking-wide font-medium">Alert settings</p>
 
                   {/* From / To */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
@@ -193,9 +191,9 @@ export default function AlertsPage() {
 
                   {/* Max price */}
                   <div>
-                    <label className="block text-sm text-black/60 dark:text-white/60 mb-1">Max price (USD)</label>
+                    <label className="block text-sm text-slate-600 mb-1">Max price (USD)</label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40 text-sm select-none">$</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm select-none">$</span>
                       <input
                         type="number"
                         required
@@ -203,7 +201,7 @@ export default function AlertsPage() {
                         value={maxPrice}
                         onChange={(e) => setMaxPrice(e.target.value)}
                         placeholder="800"
-                        className="w-full bg-black/5 dark:bg-white/10 border border-black/20 dark:border-white/20 rounded-xl pl-8 pr-4 py-3 text-black dark:text-white placeholder-black/40 dark:placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-black/30 dark:focus:ring-white/40 focus:border-transparent transition"
+                        className="w-full bg-slate-100 border border-slate-200 rounded-xl pl-8 pr-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition"
                       />
                     </div>
                   </div>
@@ -216,14 +214,14 @@ export default function AlertsPage() {
                 <button
                   type="submit"
                   disabled={status === 'submitting'}
-                  className="w-full py-3 rounded-xl bg-black dark:bg-white text-white dark:text-black font-semibold text-sm hover:bg-black/80 dark:hover:bg-white/80 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3 rounded-xl bg-brand text-white font-semibold text-sm hover:bg-brand-dark transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {status === 'submitting' ? 'Creating account…' : 'Create account & set alert'}
                 </button>
 
-                <p className="text-center text-sm text-black/45 dark:text-white/45">
+                <p className="text-center text-sm text-slate-400">
                   Already have an account?{' '}
-                  <Link href="/login" className="text-black dark:text-white underline underline-offset-2">
+                  <Link href="/login" className="text-slate-900 underline underline-offset-2">
                     Sign in
                   </Link>
                 </p>
@@ -232,15 +230,15 @@ export default function AlertsPage() {
           </div>
 
           {/* Feature bullets */}
-          <ul className="mt-8 space-y-3 text-sm text-black/50 dark:text-white/50">
+          <ul className="mt-8 space-y-3 text-sm text-slate-500">
             {[
               { Icon: TrendingDown, text: 'Alerts when price drops below your max' },
               { Icon: Zap, text: 'Flash deals 30%+ below the 12-month average' },
-              { Icon: Mail, text: <>Weekly digest of best prices <span className="text-black/30 dark:text-white/30">(coming soon)</span></> },
+              { Icon: Mail, text: <>Weekly digest of best prices <span className="text-slate-400">(coming soon)</span></> },
             ].map(({ Icon, text }, i) => (
               <li key={i} className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center shrink-0">
-                  <Icon className="w-3.5 h-3.5 text-sky-500" strokeWidth={2} />
+                <div className="w-7 h-7 rounded-lg bg-brand-50 flex items-center justify-center shrink-0">
+                  <Icon className="w-3.5 h-3.5 text-brand" strokeWidth={2} />
                 </div>
                 {text}
               </li>

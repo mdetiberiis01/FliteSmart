@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { signOut } from '@/lib/supabase/auth';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 interface NavProps {
   activePage?: 'flights' | 'alerts' | 'how-it-works';
@@ -34,7 +33,6 @@ export function Nav({ activePage }: NavProps) {
     setDropdownOpen(false);
   }
 
-  // Close dropdown on outside click
   useEffect(() => {
     function handleOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -45,24 +43,23 @@ export function Nav({ activePage }: NavProps) {
     return () => document.removeEventListener('mousedown', handleOutside);
   }, [dropdownOpen]);
 
-  const linkClass = 'hover:text-black dark:hover:text-white transition';
-  const activeClass = 'text-black dark:text-white';
-  const dimClass = 'text-black/55 dark:text-white/55';
+  const activeClass = 'text-slate-900 font-medium';
+  const dimClass = 'text-slate-500 hover:text-slate-900 transition';
 
   return (
-    <header className="relative z-10 border-b border-black/8 dark:border-white/10 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-sm">
+    <header className="relative z-10 border-b border-slate-200 bg-white">
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between">
         <div className="flex items-center gap-6 md:gap-10">
-          <Link href="/" className="flex items-center gap-2 font-bold text-base md:text-lg tracking-tight text-black dark:text-white">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-sky-500" aria-hidden="true">
+          <Link href="/" className="flex items-center gap-2 font-bold text-base md:text-lg tracking-tight text-slate-900">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand" aria-hidden="true">
               <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 2c-2-2-4-2-5.5-.5L10 5 1.8 6.2c-.5.1-.9.5-.7 1l2.3 4c.3.5.9.7 1.5.5L9 10.5 11 13l-2 3.5c-.3.5-.1 1.1.4 1.4l4 2.3c.5.2 1 0 1-.5z" />
             </svg>
             FliteSmart
           </Link>
           <nav className="hidden md:flex items-center gap-7 text-sm">
-            <Link href="/" className={`${activePage === 'flights' ? activeClass : dimClass} ${linkClass}`}>Flights</Link>
-            <Link href="/alerts" className={`${activePage === 'alerts' ? activeClass : dimClass} ${linkClass}`}>Price Alerts</Link>
-            <Link href="/how-it-works" className={`${activePage === 'how-it-works' ? activeClass : dimClass} ${linkClass}`}>How it works</Link>
+            <Link href="/" className={activePage === 'flights' ? activeClass : dimClass}>Flights</Link>
+            <Link href="/alerts" className={activePage === 'alerts' ? activeClass : dimClass}>Price Alerts</Link>
+            <Link href="/how-it-works" className={activePage === 'how-it-works' ? activeClass : dimClass}>How it works</Link>
           </nav>
         </div>
 
@@ -72,7 +69,7 @@ export function Nav({ activePage }: NavProps) {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen((o) => !o)}
-                className="flex items-center gap-1.5 text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white transition font-medium"
+                className="flex items-center gap-1.5 text-slate-600 hover:text-slate-900 transition font-medium"
               >
                 {name || user.email}
                 <svg
@@ -84,21 +81,21 @@ export function Nav({ activePage }: NavProps) {
               </button>
 
               {dropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-[#1a1a1a] border border-black/10 dark:border-white/10 rounded-xl shadow-lg shadow-black/10 dark:shadow-black/40 overflow-hidden z-50">
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-50">
                   {DROPDOWN_ITEMS.map((item) => (
                     <Link
                       key={item.label}
                       href={item.href}
                       onClick={() => setDropdownOpen(false)}
-                      className="block px-4 py-2.5 text-sm text-black/70 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/8 hover:text-black dark:hover:text-white transition"
+                      className="block px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
                     >
                       {item.label}
                     </Link>
                   ))}
-                  <div className="border-t border-black/8 dark:border-white/10" />
+                  <div className="border-t border-slate-200" />
                   <button
                     onClick={handleSignOut}
-                    className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition"
+                    className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition"
                   >
                     Log Out
                   </button>
@@ -107,21 +104,19 @@ export function Nav({ activePage }: NavProps) {
             </div>
           ) : (
             <>
-              <Link href="/login" className={`${dimClass} ${linkClass}`}>Sign in</Link>
-              <Link href="/alerts" className="px-4 py-1.5 rounded-full bg-black dark:bg-white text-white dark:text-black text-sm font-medium hover:bg-black/80 dark:hover:bg-white/80 transition">
-                Sign up
+              <Link href="/login" className={dimClass}>Sign in</Link>
+              <Link href="/alerts" className="px-4 py-1.5 rounded-full bg-brand text-white text-sm font-medium hover:bg-brand-dark transition">
+                Sign up free
               </Link>
             </>
           )}
-          <ThemeToggle />
         </div>
 
-        {/* Mobile: theme toggle + hamburger */}
-        <div className="flex md:hidden items-center gap-2">
-          <ThemeToggle />
+        {/* Mobile hamburger */}
+        <div className="flex md:hidden items-center">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="p-2 rounded-lg text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition"
+            className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition"
             aria-label="Toggle menu"
           >
             {menuOpen ? (
@@ -139,20 +134,20 @@ export function Nav({ activePage }: NavProps) {
 
       {/* Mobile menu dropdown */}
       {menuOpen && (
-        <div className="md:hidden border-t border-black/8 dark:border-white/10 bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-sm px-4 py-4 flex flex-col gap-4 text-sm">
-          <Link href="/" onClick={() => setMenuOpen(false)} className={`${activePage === 'flights' ? activeClass : dimClass} ${linkClass}`}>Flights</Link>
-          <Link href="/alerts" onClick={() => setMenuOpen(false)} className={`${activePage === 'alerts' ? activeClass : dimClass} ${linkClass}`}>Price Alerts</Link>
-          <Link href="/how-it-works" onClick={() => setMenuOpen(false)} className={`${activePage === 'how-it-works' ? activeClass : dimClass} ${linkClass}`}>How it works</Link>
-          <div className="border-t border-black/8 dark:border-white/10 pt-4 flex flex-col gap-3">
+        <div className="md:hidden border-t border-slate-200 bg-white px-4 py-4 flex flex-col gap-4 text-sm">
+          <Link href="/" onClick={() => setMenuOpen(false)} className={activePage === 'flights' ? activeClass : dimClass}>Flights</Link>
+          <Link href="/alerts" onClick={() => setMenuOpen(false)} className={activePage === 'alerts' ? activeClass : dimClass}>Price Alerts</Link>
+          <Link href="/how-it-works" onClick={() => setMenuOpen(false)} className={activePage === 'how-it-works' ? activeClass : dimClass}>How it works</Link>
+          <div className="border-t border-slate-200 pt-4 flex flex-col gap-3">
             {user ? (
               <>
-                <p className="text-black/40 dark:text-white/40 text-xs font-medium">{name || user.email}</p>
+                <p className="text-slate-400 text-xs font-medium">{name || user.email}</p>
                 {DROPDOWN_ITEMS.map((item) => (
                   <Link
                     key={item.label}
                     href={item.href}
                     onClick={() => setMenuOpen(false)}
-                    className={`${dimClass} ${linkClass}`}
+                    className={dimClass}
                   >
                     {item.label}
                   </Link>
@@ -163,9 +158,9 @@ export function Nav({ activePage }: NavProps) {
               </>
             ) : (
               <>
-                <Link href="/login" onClick={() => setMenuOpen(false)} className={`${dimClass} ${linkClass}`}>Sign in</Link>
-                <Link href="/alerts" onClick={() => setMenuOpen(false)} className="inline-block w-fit px-4 py-1.5 rounded-full bg-black dark:bg-white text-white dark:text-black text-sm font-medium">
-                  Sign up
+                <Link href="/login" onClick={() => setMenuOpen(false)} className={dimClass}>Sign in</Link>
+                <Link href="/alerts" onClick={() => setMenuOpen(false)} className="inline-block w-fit px-4 py-1.5 rounded-full bg-brand text-white text-sm font-medium">
+                  Sign up free
                 </Link>
               </>
             )}

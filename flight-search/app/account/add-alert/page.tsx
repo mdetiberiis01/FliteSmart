@@ -85,31 +85,30 @@ function AddAlertContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white">
 
       <Nav />
 
-      {/* Content */}
-      <section className="bg-gradient-to-b from-sky-50 via-sky-50/40 to-white dark:from-slate-900 dark:via-slate-900/40 dark:to-[#0a0a0a] pt-16 pb-24 px-4 flex-1">
+      <section className="bg-slate-50 border-b border-slate-200 pt-16 pb-24 px-4 flex-1">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10">
-            <h1 className="text-4xl font-bold text-black dark:text-white mb-3 tracking-tight">Add a price alert</h1>
-            <p className="text-black/50 dark:text-white/50 text-lg">
+            <h1 className="text-4xl font-bold text-slate-900 mb-3 tracking-tight">Add a price alert</h1>
+            <p className="text-slate-500 text-lg">
               We&apos;ll email you when prices drop below your target.
             </p>
           </div>
 
-          <div className="bg-white dark:bg-[#111] border border-black/10 dark:border-white/10 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/40 p-6 md:p-8">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 md:p-8">
             {status === 'success' ? (
               <div className="text-center py-6">
                 <div className="text-4xl mb-4">✓</div>
-                <h2 className="text-xl font-semibold text-black dark:text-white mb-2">Alert created!</h2>
-                <p className="text-black/55 dark:text-white/55 text-sm">
+                <h2 className="text-xl font-semibold text-slate-900 mb-2">Alert created!</h2>
+                <p className="text-slate-500 text-sm">
                   We&apos;ll email you when prices drop below your target.
                 </p>
                 <button
                   onClick={() => router.push('/account')}
-                  className="mt-6 px-6 py-2.5 rounded-xl bg-black dark:bg-white text-white dark:text-black text-sm font-semibold hover:bg-black/80 dark:hover:bg-white/80 transition"
+                  className="mt-6 px-6 py-2.5 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-dark transition"
                 >
                   Back to my account
                 </button>
@@ -133,7 +132,7 @@ function AddAlertContent() {
                 </div>
 
                 {/* Row 2: When / Trip length */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-5 border-b border-black/8 dark:border-white/8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-5 border-b border-slate-200">
                   <DateFlexibilityPicker
                     value={flexibility}
                     customStart={customDateStart}
@@ -146,7 +145,7 @@ function AddAlertContent() {
                   />
 
                   <div>
-                    <label className="block text-sm text-black/60 dark:text-white/60 mb-2">Trip length</label>
+                    <label className="block text-sm text-slate-600 mb-2">Trip length</label>
                     <div className="flex flex-wrap items-center gap-2">
                       {TRIP_DAY_PRESETS.map((days) => (
                         <motion.button
@@ -157,14 +156,14 @@ function AddAlertContent() {
                           onClick={() => setTripDays(days)}
                           className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
                             tripDays === days
-                              ? 'bg-black border-black text-white shadow-lg shadow-black/10 dark:bg-white dark:border-white dark:text-black dark:shadow-white/10'
-                              : 'bg-black/5 border-black/20 text-black/70 hover:bg-black/10 hover:text-black dark:bg-white/5 dark:border-white/20 dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-white'
+                              ? 'bg-slate-900 border-slate-900 text-white shadow-lg shadow-slate-900/10'
+                              : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
                           }`}
                         >
                           {days}d
                         </motion.button>
                       ))}
-                      <div className="flex items-center gap-1.5 bg-black/5 dark:bg-white/5 border border-black/20 dark:border-white/20 rounded-full px-3 py-1.5">
+                      <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-full px-3 py-1.5">
                         <input
                           type="number"
                           min={1}
@@ -175,9 +174,9 @@ function AddAlertContent() {
                             if (!isNaN(v) && v >= 1 && v <= 90) setTripDays(v);
                           }}
                           placeholder="Custom"
-                          className="w-16 bg-transparent text-black/70 dark:text-white/70 text-sm focus:outline-none placeholder-black/30 dark:placeholder-white/30 text-center"
+                          className="w-16 bg-transparent text-slate-700 text-sm focus:outline-none placeholder-slate-400 text-center"
                         />
-                        <span className="text-black/40 dark:text-white/40 text-xs">days</span>
+                        <span className="text-slate-400 text-xs">days</span>
                       </div>
                     </div>
                   </div>
@@ -185,9 +184,9 @@ function AddAlertContent() {
 
                 {/* Max price */}
                 <div>
-                  <label className="block text-sm text-black/60 dark:text-white/60 mb-1">Max price (USD)</label>
+                  <label className="block text-sm text-slate-600 mb-1">Max price (USD)</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40 text-sm select-none">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm select-none">$</span>
                     <input
                       type="number"
                       required
@@ -195,7 +194,7 @@ function AddAlertContent() {
                       value={maxPrice}
                       onChange={(e) => setMaxPrice(e.target.value)}
                       placeholder="800"
-                      className="w-full bg-black/5 dark:bg-white/10 border border-black/20 dark:border-white/20 rounded-xl pl-8 pr-4 py-3 text-black dark:text-white placeholder-black/40 dark:placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-black/30 dark:focus:ring-white/40 focus:border-transparent transition"
+                      className="w-full bg-slate-100 border border-slate-200 rounded-xl pl-8 pr-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition"
                     />
                   </div>
                 </div>
@@ -205,7 +204,7 @@ function AddAlertContent() {
                 )}
 
                 <div className="flex items-center justify-between">
-                  <Link href="/account" className="text-sm text-black/45 dark:text-white/45 hover:text-black dark:hover:text-white transition">
+                  <Link href="/account" className="text-sm text-slate-400 hover:text-slate-900 transition">
                     Cancel
                   </Link>
                   <motion.button
@@ -213,7 +212,7 @@ function AddAlertContent() {
                     disabled={status === 'submitting'}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="px-10 py-3 rounded-xl font-semibold text-white bg-black hover:bg-black/85 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg shadow-black/10 text-base dark:text-black dark:bg-white dark:hover:bg-white/85 dark:shadow-white/10"
+                    className="px-10 py-3 rounded-xl font-semibold text-white bg-brand hover:bg-brand-dark disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg text-base"
                   >
                     {status === 'submitting' ? 'Saving…' : 'Add alert →'}
                   </motion.button>

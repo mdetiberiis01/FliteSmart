@@ -55,6 +55,8 @@ export function useSearchForm() {
       destination: form.destination,
       flexibility: form.flexibility,
       tripDays: String(form.tripDays ?? 7),
+      cabinClass: form.cabinClass ?? 'economy',
+      travelers: String(form.travelers ?? 1),
       ...(form.customDateStart && { customDateStart: form.customDateStart }),
       ...(form.customDateEnd && { customDateEnd: form.customDateEnd }),
     });

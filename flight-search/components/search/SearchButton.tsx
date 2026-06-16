@@ -13,7 +13,7 @@ export function SearchButton({ isLoading }: Props) {
       disabled={isLoading}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      className="px-10 py-3 rounded-xl font-semibold text-white bg-black hover:bg-black/85 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg shadow-black/10 text-base dark:text-black dark:bg-white dark:hover:bg-white/85 dark:shadow-white/10"
+      className="px-10 py-3 rounded-xl font-semibold text-white bg-brand hover:bg-brand-dark disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg text-base"
     >
       {isLoading ? (
         <span className="flex items-center gap-2">

@@ -17,13 +17,11 @@ export default function AccountPage() {
   const [alerts, setAlerts] = useState<UserAlert[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Name edit state
   const [nameValue, setNameValue] = useState('');
   const [editingName, setEditingName] = useState(false);
   const [savingName, setSavingName] = useState(false);
   const [nameSaved, setNameSaved] = useState(false);
 
-  // Home airport state
   const [homeAirport, setHomeAirport] = useState('');
   const [homeAirportName, setHomeAirportName] = useState('');
   const [savingAirport, setSavingAirport] = useState(false);
@@ -38,7 +36,6 @@ export default function AccountPage() {
       }
       setUser(u);
       setNameValue((u.user_metadata?.full_name as string | undefined) ?? '');
-      // Populate home airport from saved metadata
       const savedCode = u.user_metadata?.home_airport as string | undefined;
       const savedName = u.user_metadata?.home_airport_name as string | undefined;
       if (savedCode) {
@@ -49,7 +46,7 @@ export default function AccountPage() {
         const a = await getUserAlerts();
         setAlerts(a);
       } catch {
-        // alerts load failure is non-fatal
+        // non-fatal
       }
       setLoading(false);
     }
@@ -112,27 +109,26 @@ export default function AccountPage() {
     : null;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white">
       <Nav />
 
-      <section className="bg-gradient-to-b from-sky-50 via-sky-50/40 to-white dark:from-slate-900 dark:via-slate-900/40 dark:to-[#0a0a0a] pt-16 pb-24 px-4 flex-1">
+      <section className="bg-slate-50 border-b border-slate-200 pt-16 pb-24 px-4 flex-1">
         <div className="max-w-2xl mx-auto space-y-8">
 
-          {/* ── Account Info ── */}
+          {/* Account Info */}
           <div>
-            <h1 className="text-3xl font-bold text-black dark:text-white mb-1 tracking-tight">
+            <h1 className="text-3xl font-bold text-slate-900 mb-1 tracking-tight">
               {name ? `Hey, ${name.split(' ')[0]}` : 'My Account'}
             </h1>
-            <p className="text-black/50 dark:text-white/50 text-sm">{user?.email}</p>
+            <p className="text-slate-500 text-sm">{user?.email}</p>
           </div>
 
-          <div className="bg-white dark:bg-white/[0.04] border border-black/10 dark:border-white/10 rounded-2xl p-6 space-y-5">
-            <h2 className="font-semibold text-black dark:text-white">Account info</h2>
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-5">
+            <h2 className="font-semibold text-slate-900">Account info</h2>
 
-            {/* Name + email */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-black/40 dark:text-white/40 mb-1">Name</p>
+                <p className="text-slate-400 mb-1">Name</p>
                 {editingName ? (
                   <div className="flex items-center gap-2">
                     <input
@@ -143,30 +139,30 @@ export default function AccountPage() {
                         if (e.key === 'Enter') handleSaveName();
                         if (e.key === 'Escape') setEditingName(false);
                       }}
-                      className="flex-1 min-w-0 bg-black/5 dark:bg-white/8 border border-black/10 dark:border-white/10 rounded-lg px-3 py-1.5 text-black dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20 transition"
+                      className="flex-1 min-w-0 bg-slate-100 border border-slate-200 rounded-lg px-3 py-1.5 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-brand transition"
                     />
                     <button
                       onClick={handleSaveName}
                       disabled={!nameValue.trim() || savingName}
-                      className="shrink-0 px-3 py-1.5 rounded-lg bg-black dark:bg-white text-white dark:text-black text-xs font-medium hover:bg-black/80 dark:hover:bg-white/80 disabled:opacity-40 transition"
+                      className="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-medium hover:bg-slate-700 disabled:opacity-40 transition"
                     >
                       {savingName ? '…' : 'Save'}
                     </button>
                     <button
                       onClick={() => setEditingName(false)}
-                      className="text-xs text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60 transition"
+                      className="text-xs text-slate-400 hover:text-slate-600 transition"
                     >
                       Cancel
                     </button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <p className="text-black dark:text-white font-medium">
+                    <p className="text-slate-900 font-medium">
                       {name || '—'}{nameSaved && <span className="ml-2 text-green-500 text-xs">Saved ✓</span>}
                     </p>
                     <button
                       onClick={() => { setNameValue(name || ''); setEditingName(true); }}
-                      className="text-xs text-black/35 dark:text-white/35 hover:text-black/60 dark:hover:text-white/60 transition"
+                      className="text-xs text-slate-400 hover:text-slate-600 transition"
                     >
                       Edit
                     </button>
@@ -174,25 +170,25 @@ export default function AccountPage() {
                 )}
               </div>
               <div>
-                <p className="text-black/40 dark:text-white/40 mb-1">Email</p>
-                <p className="text-black dark:text-white font-medium">{user?.email}</p>
+                <p className="text-slate-400 mb-1">Email</p>
+                <p className="text-slate-900 font-medium">{user?.email}</p>
               </div>
               {memberSince && (
                 <div>
-                  <p className="text-black/40 dark:text-white/40 mb-1">Member since</p>
-                  <p className="text-black dark:text-white font-medium">{memberSince}</p>
+                  <p className="text-slate-400 mb-1">Member since</p>
+                  <p className="text-slate-900 font-medium">{memberSince}</p>
                 </div>
               )}
               <div>
-                <p className="text-black/40 dark:text-white/40 mb-1">User ID</p>
-                <p className="text-black/50 dark:text-white/50 font-mono text-xs truncate">{user?.id}</p>
+                <p className="text-slate-400 mb-1">User ID</p>
+                <p className="text-slate-500 font-mono text-xs truncate">{user?.id}</p>
               </div>
             </div>
 
             {/* Home airport */}
-            <div className="border-t border-black/8 dark:border-white/8 pt-5">
-              <p className="text-sm font-medium text-black dark:text-white mb-1">Home airport</p>
-              <p className="text-xs text-black/45 dark:text-white/45 mb-3">
+            <div className="border-t border-slate-200 pt-5">
+              <p className="text-sm font-medium text-slate-900 mb-1">Home airport</p>
+              <p className="text-xs text-slate-400 mb-3">
                 Used as the default departure airport across FliteSmart.
               </p>
               <div className="flex items-end gap-3">
@@ -210,7 +206,7 @@ export default function AccountPage() {
                 <button
                   onClick={handleSaveAirport}
                   disabled={!homeAirport || savingAirport}
-                  className="shrink-0 px-4 py-3 rounded-xl bg-black dark:bg-white text-white dark:text-black text-sm font-medium hover:bg-black/80 dark:hover:bg-white/80 disabled:opacity-40 transition"
+                  className="shrink-0 px-4 py-3 rounded-xl bg-brand text-white text-sm font-medium hover:bg-brand-dark disabled:opacity-40 transition"
                 >
                   {savingAirport ? 'Saving…' : airportSaved ? 'Saved ✓' : 'Save'}
                 </button>
@@ -218,27 +214,27 @@ export default function AccountPage() {
             </div>
           </div>
 
-          {/* ── Price Alerts ── */}
+          {/* Price Alerts */}
           {loading ? (
-            <div className="text-black/40 dark:text-white/40 text-sm">Loading…</div>
+            <div className="text-slate-400 text-sm">Loading…</div>
           ) : (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="font-semibold text-black dark:text-white">Your price alerts</h2>
+                <h2 className="font-semibold text-slate-900">Your price alerts</h2>
                 <Link
                   href="/account/add-alert"
-                  className="text-sm px-4 py-1.5 rounded-full border border-black/20 dark:border-white/20 text-black/70 dark:text-white/70 hover:border-black/40 dark:hover:border-white/40 hover:text-black dark:hover:text-white transition"
+                  className="text-sm px-4 py-1.5 rounded-full border border-slate-300 text-slate-600 hover:border-slate-400 hover:text-slate-900 transition"
                 >
                   + Add alert
                 </Link>
               </div>
 
               {alerts.length === 0 ? (
-                <div className="bg-white dark:bg-white/[0.04] border border-black/10 dark:border-white/10 rounded-2xl p-8 text-center">
-                  <p className="text-black/40 dark:text-white/40 text-sm mb-4">No alerts yet.</p>
+                <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center">
+                  <p className="text-slate-400 text-sm mb-4">No alerts yet.</p>
                   <Link
                     href="/account/add-alert"
-                    className="inline-block px-6 py-2.5 rounded-xl bg-black dark:bg-white text-white dark:text-black text-sm font-semibold hover:bg-black/80 dark:hover:bg-white/80 transition"
+                    className="inline-block px-6 py-2.5 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-dark transition"
                   >
                     Set your first alert
                   </Link>
@@ -247,17 +243,17 @@ export default function AccountPage() {
                 alerts.map((alert) => (
                   <div
                     key={alert.id}
-                    className={`bg-white dark:bg-white/[0.04] border rounded-2xl p-5 flex items-center justify-between gap-4 transition ${
+                    className={`bg-white border rounded-2xl p-5 flex items-center justify-between gap-4 transition ${
                       alert.is_active
-                        ? 'border-black/10 dark:border-white/10'
-                        : 'border-black/5 dark:border-white/5 opacity-50'
+                        ? 'border-slate-200'
+                        : 'border-slate-100 opacity-50'
                     }`}
                   >
                     <div className="min-w-0">
-                      <div className="font-medium text-black dark:text-white text-sm">
+                      <div className="font-medium text-slate-900 text-sm">
                         {alert.origin_name || alert.origin} → {alert.destination}
                       </div>
-                      <div className="text-black/45 dark:text-white/45 text-xs mt-0.5">
+                      <div className="text-slate-400 text-xs mt-0.5">
                         Max ${alert.max_price}
                         {alert.flexibility && alert.flexibility !== 'anytime' && (
                           <> · {alert.flexibility.charAt(0).toUpperCase() + alert.flexibility.slice(1)}</>
@@ -271,38 +267,38 @@ export default function AccountPage() {
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       {alert.is_active ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
                           Active
                         </span>
                       ) : (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-black/8 dark:bg-white/10 text-black/40 dark:text-white/40">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
                           Paused
                         </span>
                       )}
                       <Link
                         href={`/account/edit-alert/${alert.id}`}
-                        className="text-xs text-black/35 dark:text-white/35 hover:text-black/60 dark:hover:text-white/60 transition"
+                        className="text-xs text-slate-400 hover:text-slate-600 transition"
                       >
                         Edit
                       </Link>
                       {alert.is_active ? (
                         <button
                           onClick={() => handleDeactivate(alert.id)}
-                          className="text-xs text-black/35 dark:text-white/35 hover:text-black/60 dark:hover:text-white/60 transition"
+                          className="text-xs text-slate-400 hover:text-slate-600 transition"
                         >
                           Pause
                         </button>
                       ) : (
                         <button
                           onClick={() => handleReactivate(alert.id)}
-                          className="text-xs text-black/35 dark:text-white/35 hover:text-black/60 dark:hover:text-white/60 transition"
+                          className="text-xs text-slate-400 hover:text-slate-600 transition"
                         >
                           Reactivate
                         </button>
                       )}
                       <button
                         onClick={() => handleDelete(alert.id)}
-                        className="text-xs text-red-400/60 hover:text-red-500 transition"
+                        className="text-xs text-red-400 hover:text-red-600 transition"
                       >
                         Delete
                       </button>

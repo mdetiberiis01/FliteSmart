@@ -31,7 +31,6 @@ export function TrendingDestinations({ onSelect, homeAirport, selectedOrigin, se
   const [destinations, setDestinations] = useState<TrendingDest[]>(STATIC_TRENDING);
   const [loading, setLoading] = useState(false);
 
-  // Prefer the user's actively selected departure airport; fall back to home airport
   const fetchOrigin = selectedOrigin || homeAirport;
 
   useEffect(() => {
@@ -70,25 +69,25 @@ export function TrendingDestinations({ onSelect, homeAirport, selectedOrigin, se
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base font-bold text-slate-800 dark:text-white">{headerLabel}</h2>
-        <span className="text-xs text-slate-400 dark:text-white/40 font-medium uppercase tracking-wide">
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-lg font-bold text-slate-900">{headerLabel}</h2>
+        <span className="text-xs text-slate-400 font-medium uppercase tracking-wide">
           Tap to search
         </span>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="h-36 rounded-xl bg-black/8 dark:bg-white/8 animate-pulse"
+                className="h-36 rounded-xl bg-slate-200 animate-pulse"
               />
             ))
           : destinations.map((dest) => (
               <button
                 key={dest.city}
                 onClick={() => onSelect(dest)}
-                className="group relative h-36 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-400 text-left"
+                className="group relative h-36 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand text-left"
               >
                 {/* Photo */}
                 <img
@@ -100,7 +99,7 @@ export function TrendingDestinations({ onSelect, homeAirport, selectedOrigin, se
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 {/* Tag */}
                 {dest.tag && (
-                  <span className="absolute top-2 left-2 text-[10px] font-semibold uppercase tracking-wide bg-sky-500 text-white px-2 py-0.5 rounded-full">
+                  <span className="absolute top-2 left-2 text-[10px] font-semibold uppercase tracking-wide bg-brand text-white px-2 py-0.5 rounded-full">
                     {dest.tag}
                   </span>
                 )}
@@ -108,7 +107,7 @@ export function TrendingDestinations({ onSelect, homeAirport, selectedOrigin, se
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                   <p className="text-white font-bold text-sm leading-tight">{dest.city}</p>
                   <p className="text-white/70 text-xs">{dest.country}</p>
-                  <p className="text-sky-300 font-semibold text-sm mt-0.5">from ${dest.price}</p>
+                  <p className="text-[#48cae4] font-semibold text-sm mt-0.5">from ${dest.price}</p>
                 </div>
               </button>
             ))}

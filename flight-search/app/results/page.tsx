@@ -27,6 +27,8 @@ function ResultsContent() {
   const destination = searchParams.get('destination') || '';
   const flexibility = searchParams.get('flexibility') || 'anytime';
   const tripDays = parseInt(searchParams.get('tripDays') || '7', 10);
+  const cabinClass = searchParams.get('cabinClass') || 'economy';
+  const travelers = parseInt(searchParams.get('travelers') || '1', 10);
 
   useEffect(() => {
     if (!origin || !destination) {
@@ -46,6 +48,8 @@ function ResultsContent() {
         destination,
         flexibility,
         tripDays,
+        cabinClass,
+        travelers,
         customDateStart: searchParams.get('customDateStart') || undefined,
         customDateEnd: searchParams.get('customDateEnd') || undefined,
       }),
@@ -74,26 +78,26 @@ function ResultsContent() {
     }[flexibility] || flexibility;
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-white">
       {/* Top bar */}
-      <div className="border-b border-black/10 dark:border-white/10 glass-card sticky top-0 z-30">
+      <div className="border-b border-slate-200 bg-white sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
           <button
             onClick={() => router.push('/')}
-            className="text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition text-sm flex items-center gap-1 shrink-0"
+            className="text-slate-500 hover:text-slate-900 transition text-sm flex items-center gap-1 shrink-0"
           >
             ← Back
           </button>
           <div className="flex-1 text-center min-w-0">
             <div className="truncate">
-              <span className="text-black dark:text-white font-semibold text-sm">
+              <span className="text-slate-900 font-semibold text-sm">
                 {originName} → {destination}
               </span>
-              <span className="text-black/50 dark:text-white/50 text-xs ml-2 hidden sm:inline">{flexLabel}</span>
+              <span className="text-slate-400 text-xs ml-2 hidden sm:inline">{flexLabel}</span>
             </div>
             <button
               onClick={() => setShowMap(!showMap)}
-              className="text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition text-xs mt-0.5"
+              className="text-slate-400 hover:text-brand transition text-xs mt-0.5"
             >
               {showMap ? 'Hide map' : 'Show map'}
             </button>
@@ -115,11 +119,11 @@ function ResultsContent() {
 
         {/* Demo data banner */}
         {!isLoading && !error && !dismissedDemoBanner && results.length > 0 && results.every((r) => r.dataSource === 'demo') && (
-          <div className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-yellow-400/40 bg-yellow-400/10 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-300">
+          <div className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-700">
             <span>Showing sample prices — configure API keys to see live fares.</span>
             <button
               onClick={() => setDismissedDemoBanner(true)}
-              className="shrink-0 text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-100 transition"
+              className="shrink-0 text-yellow-600 hover:text-yellow-900 transition"
               aria-label="Dismiss"
             >
               ✕
@@ -134,36 +138,35 @@ function ResultsContent() {
             animate={{ opacity: 1 }}
             className="mb-6"
           >
-            <h2 className="text-black dark:text-white text-2xl font-bold">
+            <h2 className="text-slate-900 text-2xl font-bold">
               {results.length > 0
                 ? `${results.length} flight${results.length !== 1 ? 's' : ''} found`
                 : 'Searching...'}
             </h2>
             <div className="flex flex-wrap items-center gap-2 mt-2">
-              <span className="text-black/50 dark:text-white/50 text-sm">From {originName}</span>
-              <span className="text-black/20 dark:text-white/20">·</span>
-              <span className="text-black/50 dark:text-white/50 text-sm">{flexLabel}</span>
-              <span className="text-black/20 dark:text-white/20">·</span>
-              <span className="glass-card border border-black/20 dark:border-white/20 text-black/70 dark:text-white/70 text-xs font-medium px-2.5 py-1 rounded-full">
+              <span className="text-slate-500 text-sm">From {originName}</span>
+              <span className="text-slate-300">·</span>
+              <span className="text-slate-500 text-sm">{flexLabel}</span>
+              <span className="text-slate-300">·</span>
+              <span className="bg-slate-100 border border-slate-200 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-full">
                 {tripDays} day{tripDays !== 1 ? 's' : ''}
               </span>
-              <span className="text-black/20 dark:text-white/20">·</span>
-              <span className="text-black/50 dark:text-white/50 text-sm">Prices per person roundtrip</span>
+              <span className="text-slate-300">·</span>
+              <span className="text-slate-500 text-sm">Prices per person roundtrip</span>
             </div>
           </motion.div>
         )}
 
         {error && (
-          <div className="glass-card border border-red-500/30 rounded-xl p-6 mb-6 text-center">
-            <p className="text-red-400">{error}</p>
-            <p className="text-white/50 text-sm mt-2">
+          <div className="border border-red-200 bg-red-50 rounded-xl p-6 mb-6 text-center">
+            <p className="text-red-600">{error}</p>
+            <p className="text-slate-500 text-sm mt-2">
               Make sure your API keys are configured in .env.local
             </p>
           </div>
         )}
 
-
-        <ResultsGrid results={results} isLoading={isLoading} />
+        <ResultsGrid results={results} isLoading={isLoading} cabinClass={cabinClass} travelers={travelers} />
 
         {/* Inline price alert prompt */}
         {!isLoading && !error && results.length > 0 && (
@@ -171,25 +174,25 @@ function ResultsContent() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.6 }}
-            className="mt-8 rounded-2xl border border-sky-200 dark:border-sky-500/25 bg-sky-50 dark:bg-sky-500/8 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+            className="mt-8 rounded-2xl border border-brand-50 bg-[#e0f4ff] px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
           >
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-sky-100 dark:bg-sky-500/15 flex items-center justify-center shrink-0 mt-0.5">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-sky-600 dark:text-sky-400" aria-hidden="true">
+              <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center shrink-0 mt-0.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand" aria-hidden="true">
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                   <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-semibold text-sky-900 dark:text-sky-200">Track prices for this route</p>
-                <p className="text-xs text-sky-700/70 dark:text-sky-300/60 mt-0.5">
+                <p className="text-sm font-semibold text-slate-900">Track prices for this route</p>
+                <p className="text-xs text-slate-500 mt-0.5">
                   Get emailed when {origin} → {destination} drops below your target price.
                 </p>
               </div>
             </div>
             <a
               href={`/account/add-alert?origin=${encodeURIComponent(origin)}&originName=${encodeURIComponent(originName)}&destination=${encodeURIComponent(destination)}`}
-              className="shrink-0 px-5 py-2.5 rounded-xl bg-sky-600 dark:bg-sky-500 text-white text-sm font-semibold hover:bg-sky-700 dark:hover:bg-sky-400 transition whitespace-nowrap"
+              className="shrink-0 px-5 py-2.5 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-dark transition whitespace-nowrap"
             >
               Set a price alert
             </a>
@@ -205,7 +208,7 @@ export default function ResultsPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center">
-          <div className="text-black/60 dark:text-white/60 text-lg">Loading...</div>
+          <div className="text-slate-500 text-lg">Loading...</div>
         </div>
       }
     >

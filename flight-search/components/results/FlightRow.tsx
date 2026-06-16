@@ -11,6 +11,8 @@ import { motion } from 'framer-motion';
 interface Props {
   result: SearchResult;
   index: number;
+  cabinClass?: string;
+  travelers?: number;
 }
 
 function formatLegDate(dateStr: string): string {
@@ -21,21 +23,23 @@ function formatLegDate(dateStr: string): string {
   });
 }
 
-export function FlightRow({ result, index }: Props) {
+const GOOGLE_CABIN: Record<string, string> = { economy: 'e', premium_economy: 'p', business: 'b', first: 'f' };
+
+export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1 }: Props) {
   function handleClick() {
-    let url = result.bookingUrl;
-    if (!url) {
-      const marker = process.env.NEXT_PUBLIC_TRAVELPAYOUTS_MARKER || '';
-      const markerParam = marker ? `?marker=${marker}` : '';
-      const [, depM, depD] = (result.departureDate || '').split('-');
-      const dep = (depM || '') + (depD || '');
-      let ret = '1';
-      if (result.returnDate) {
-        const [, retM, retD] = result.returnDate.split('-');
-        ret = (retM || '') + (retD || '');
-      }
-      url = `https://www.aviasales.com/search/${result.origin || ''}${dep}${result.destination || ''}${ret}1${markerParam}`;
-    }
+    // Use bookingUrl only if it's already a Google Flights link (from SerpAPI)
+    const url = result.bookingUrl?.startsWith('https://www.google.com')
+      ? result.bookingUrl
+      : (() => {
+          const origin = result.origin || '';
+          const dest = result.destination || '';
+          const dep = result.departureDate || '';
+          const cabin = GOOGLE_CABIN[cabinClass] ?? 'e';
+          const legs = result.returnDate
+            ? `${origin}.${dest}.${dep}*${dest}.${origin}.${result.returnDate}`
+            : `${origin}.${dest}.${dep}`;
+          return `https://www.google.com/travel/flights#flt=${legs};c:USD;e:${travelers};t:${cabin}`;
+        })();
     window.open(url, '_blank', 'noopener,noreferrer');
   }
 
@@ -45,22 +49,22 @@ export function FlightRow({ result, index }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.04 }}
       onClick={handleClick}
-      className="glass-card rounded-xl border border-black/8 dark:border-white/10 hover:border-black/25 dark:hover:border-white/30 transition-all hover:shadow-md hover:shadow-black/5 dark:hover:shadow-white/5 group cursor-pointer"
+      className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-all hover:shadow-md hover:shadow-slate-100 group cursor-pointer"
     >
       <div className="flex items-stretch gap-0">
 
         {/* ── Left: destination name ── */}
-        <div className="px-3 py-3 flex flex-col justify-center w-24 sm:w-36 shrink-0 border-r border-black/6 dark:border-white/8">
-          <div className="font-semibold text-black dark:text-white text-xs sm:text-sm leading-tight truncate">
+        <div className="px-3 py-3 flex flex-col justify-center w-24 sm:w-36 shrink-0 border-r border-slate-100">
+          <div className="font-semibold text-slate-900 text-xs sm:text-sm leading-tight truncate">
             {result.destinationCity || result.destination}
           </div>
-          <div className="text-xs text-black/45 dark:text-white/45 truncate mt-0.5">
+          <div className="text-xs text-slate-400 truncate mt-0.5">
             {result.destinationCountry}
           </div>
         </div>
 
         {/* ── Middle: flight legs ── */}
-        <div className="flex-1 min-w-0 divide-y divide-black/6 dark:divide-white/8">
+        <div className="flex-1 min-w-0 divide-y divide-slate-100">
 
           {/* Outbound leg */}
           <div className="flex items-center gap-3 px-4 py-2.5">
@@ -74,7 +78,7 @@ export function FlightRow({ result, index }: Props) {
               fromDate={formatLegDate(result.departureDate)}
             />
             {result.duration && (
-              <span className="text-xs text-black/40 dark:text-white/40 shrink-0 hidden md:block tabular-nums">
+              <span className="text-xs text-slate-400 shrink-0 hidden md:block tabular-nums">
                 {formatDuration(result.duration)}
               </span>
             )}
@@ -93,7 +97,7 @@ export function FlightRow({ result, index }: Props) {
                 fromDate={formatLegDate(result.returnDate)}
               />
               {result.duration && (
-                <span className="text-xs text-black/40 dark:text-white/40 shrink-0 hidden md:block tabular-nums">
+                <span className="text-xs text-slate-400 shrink-0 hidden md:block tabular-nums">
                   {formatDuration(result.duration)}
                 </span>
               )}
@@ -102,14 +106,14 @@ export function FlightRow({ result, index }: Props) {
         </div>
 
         {/* ── Right: baggage + price + CTA ── */}
-        <div className="flex flex-col items-end justify-center gap-1.5 px-3 py-3 border-l border-black/6 dark:border-white/8 shrink-0">
+        <div className="flex flex-col items-end justify-center gap-1.5 px-3 py-3 border-l border-slate-100 shrink-0">
           <BaggageInfo carryOn={1} checked={0} />
-          <div className="text-lg sm:text-xl font-bold text-black dark:text-white tabular-nums">
+          <div className="text-lg sm:text-xl font-bold text-slate-900 tabular-nums">
             {formatPrice(result.price, result.currency)}
           </div>
           <div className="flex items-center gap-1.5">
             <DealBadge rating={result.dealRating} percent={result.dealPercent} />
-            <span className="text-xs font-medium text-black/50 dark:text-white/50 group-hover:text-black dark:group-hover:text-white transition-colors">
+            <span className="text-xs font-medium text-slate-500 group-hover:text-brand transition-colors">
               Book →
             </span>
           </div>

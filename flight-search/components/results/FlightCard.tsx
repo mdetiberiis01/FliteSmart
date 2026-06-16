@@ -13,6 +13,8 @@ import { motion } from 'framer-motion';
 interface Props {
   result: SearchResult;
   index: number;
+  cabinClass?: string;
+  travelers?: number;
 }
 
 function formatLegDate(dateStr: string): string {
@@ -37,37 +39,34 @@ interface LegRowProps {
 function LegRow({ airlineCode, date, from, to, stops, layovers, layoverDurations, duration }: LegRowProps) {
   return (
     <div className="flex items-center gap-3 py-2.5">
-      {/* Airline logo */}
       <AirlineLogo code={airlineCode} size={32} />
-
-      {/* Route bar with date at origin */}
       <RouteBar from={from} to={to} stops={stops} layovers={layovers} layoverDurations={layoverDurations} fromDate={date} />
-
-      {/* Duration */}
       {duration && (
         <div className="shrink-0 text-right">
-          <div className="text-xs text-black/40 dark:text-white/40">{formatDuration(duration)}</div>
+          <div className="text-xs text-slate-400">{formatDuration(duration)}</div>
         </div>
       )}
     </div>
   );
 }
 
-export function FlightCard({ result, index }: Props) {
+const GOOGLE_CABIN: Record<string, string> = { economy: 'e', premium_economy: 'p', business: 'b', first: 'f' };
+
+export function FlightCard({ result, index, cabinClass = 'economy', travelers = 1 }: Props) {
   function handleClick() {
-    let url = result.bookingUrl;
-    if (!url) {
-      const marker = process.env.NEXT_PUBLIC_TRAVELPAYOUTS_MARKER || '';
-      const markerParam = marker ? `?marker=${marker}` : '';
-      const [, depM, depD] = (result.departureDate || '').split('-');
-      const dep = (depM || '') + (depD || '');
-      let ret = '1';
-      if (result.returnDate) {
-        const [, retM, retD] = result.returnDate.split('-');
-        ret = (retM || '') + (retD || '');
-      }
-      url = `https://www.aviasales.com/search/${result.origin || ''}${dep}${result.destination || ''}${ret}1${markerParam}`;
-    }
+    // Use bookingUrl only if it's already a Google Flights link (from SerpAPI)
+    const url = result.bookingUrl?.startsWith('https://www.google.com')
+      ? result.bookingUrl
+      : (() => {
+          const origin = result.origin || '';
+          const dest = result.destination || '';
+          const dep = result.departureDate || '';
+          const cabin = GOOGLE_CABIN[cabinClass] ?? 'e';
+          const legs = result.returnDate
+            ? `${origin}.${dest}.${dep}*${dest}.${origin}.${result.returnDate}`
+            : `${origin}.${dest}.${dep}`;
+          return `https://www.google.com/travel/flights#flt=${legs};c:USD;e:${travelers};t:${cabin}`;
+        })();
     window.open(url, '_blank', 'noopener,noreferrer');
   }
 
@@ -77,27 +76,26 @@ export function FlightCard({ result, index }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.07 }}
       onClick={handleClick}
-      className="glass-card rounded-2xl border border-black/8 dark:border-white/10 hover:border-black/25 dark:hover:border-white/30 transition-all hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-white/5 group cursor-pointer overflow-hidden"
+      className="bg-white rounded-2xl border border-slate-200 hover:border-slate-300 transition-all hover:shadow-lg hover:shadow-slate-100 group cursor-pointer overflow-hidden"
     >
-      {/* ── Header: destination + price ── */}
+      {/* Header: destination + price */}
       <div className="flex items-start justify-between px-5 pt-4 pb-3">
         <div>
-          <h3 className="text-black dark:text-white font-semibold text-lg leading-tight">
+          <h3 className="text-slate-900 font-semibold text-lg leading-tight">
             {result.destinationCity || result.destination}
           </h3>
-          <p className="text-black/50 dark:text-white/50 text-sm">{result.destinationCountry}</p>
+          <p className="text-slate-500 text-sm">{result.destinationCountry}</p>
         </div>
         <div className="text-right">
-          <div className="text-xl sm:text-2xl font-bold text-black dark:text-white tabular-nums">
+          <div className="text-xl sm:text-2xl font-bold text-slate-900 tabular-nums">
             {formatPrice(result.price, result.currency)}
           </div>
-          <div className="text-xs text-black/50 dark:text-white/50">per person</div>
+          <div className="text-xs text-slate-400">per person</div>
         </div>
       </div>
 
-      {/* ── Flight legs ── */}
-      <div className="px-5 border-t border-black/6 dark:border-white/8 divide-y divide-black/6 dark:divide-white/8">
-        {/* Outbound */}
+      {/* Flight legs */}
+      <div className="px-5 border-t border-slate-100 divide-y divide-slate-100">
         <LegRow
           airlineCode={result.airlineCode}
           date={formatLegDate(result.departureDate)}
@@ -108,8 +106,6 @@ export function FlightCard({ result, index }: Props) {
           layoverDurations={result.layoverDurations}
           duration={result.duration}
         />
-
-        {/* Return (only when round-trip) */}
         {result.returnDate && (
           <LegRow
             airlineCode={result.airlineCode}
@@ -124,8 +120,8 @@ export function FlightCard({ result, index }: Props) {
         )}
       </div>
 
-      {/* ── Baggage + deal badge + historical low ── */}
-      <div className="px-5 py-2.5 border-t border-black/6 dark:border-white/8 flex items-center justify-between gap-2 flex-wrap">
+      {/* Baggage + deal badge + historical low */}
+      <div className="px-5 py-2.5 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
         <BaggageInfo carryOn={1} checked={0} />
         <div className="flex items-center gap-2">
           <DealBadge rating={result.dealRating} percent={result.dealPercent} />
@@ -133,17 +129,15 @@ export function FlightCard({ result, index }: Props) {
         </div>
       </div>
 
-      {/* ── Sparkline ── */}
+      {/* Sparkline */}
       <div className="px-5 pb-1">
         <PriceSparkline data={result.priceHistory} currentPrice={result.price} />
       </div>
 
-      {/* ── CTA footer ── */}
-      <div className="px-5 py-3 border-t border-black/8 dark:border-white/10 flex items-center justify-between">
-        <span className="text-xs text-black/30 dark:text-white/30">
-          aviasales.com
-        </span>
-        <span className="text-xs text-black/60 dark:text-white/60 font-medium group-hover:text-black dark:group-hover:text-white transition-colors">
+      {/* CTA footer */}
+      <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between">
+        <span className="text-xs text-slate-400">google.com/flights</span>
+        <span className="text-xs text-slate-500 font-medium group-hover:text-brand transition-colors">
           Book now →
         </span>
       </div>
