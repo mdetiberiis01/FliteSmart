@@ -415,7 +415,7 @@ export async function orchestrateSearch(params: SearchParams, userIp?: string): 
   // Single-dest: weekly scan for fine-grained cheapest-day detection.
   // Multi-dest: monthly scan (one date per month) to keep API usage reasonable across 8 destinations.
   const searchDates = generateSearchDates(flexibility, customDateStart, customDateEnd, isMultiDest ? 28 : 7);
-  if (!searchDates.length) return [];
+  if (!searchDates.length) return makeDemoResults(origin, destinationCodes, dateRanges, tripDays, cabinClass);
 
   if (isMultiDest) {
     // Region/multi-destination: scan one date per month for each destination, push cheapest
@@ -462,7 +462,7 @@ export async function orchestrateSearch(params: SearchParams, userIp?: string): 
   const merged = mergeAndDeduplicateResults(allResults);
 
   if (merged.length === 0) {
-    return [];
+    return makeDemoResults(origin, destinationCodes, dateRanges, tripDays, cabinClass);
   }
 
   return merged;
