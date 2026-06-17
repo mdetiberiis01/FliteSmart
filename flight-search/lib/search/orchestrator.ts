@@ -337,23 +337,31 @@ async function searchFlightsWithFallback(
 ): Promise<{ flights: import('../serpapi/flight-search').FlightResult[]; pricePoints: PricePoint[]; dataSource: 'tequila' | 'serpapi' | 'amadeus' | 'aviasales' }> {
   const tequila = await searchFlightsTequila(origin, destination, departureDate, returnDate);
   if (tequila.flights.length > 0) {
+    console.log(`[search] ${origin}→${destination} ${departureDate}: tequila (${tequila.flights.length} results)`);
     return { ...tequila, dataSource: 'tequila' };
   }
   const serp = await searchFlights(origin, destination, departureDate, returnDate);
   if (serp.flights.length > 0) {
+    console.log(`[search] ${origin}→${destination} ${departureDate}: serpapi (${serp.flights.length} results)`);
     return { ...serp, dataSource: 'serpapi' };
   }
   const amadeusOffers = await getFlightOffers(origin, destination, departureDate, returnDate);
   const amadeusFlights = mapAmadeusOffers(amadeusOffers, departureDate, returnDate);
   if (amadeusFlights.length > 0) {
+    console.log(`[search] ${origin}→${destination} ${departureDate}: amadeus (${amadeusFlights.length} results)`);
     return { flights: amadeusFlights, pricePoints: [], dataSource: 'amadeus' };
   }
   const aviasales = await searchFlightsAviasalesRealtime(origin, destination, departureDate, returnDate, userIp);
   if (aviasales.flights.length > 0) {
+    console.log(`[search] ${origin}→${destination} ${departureDate}: aviasales-realtime (${aviasales.flights.length} results)`);
     return { ...aviasales, dataSource: 'aviasales' };
   }
-  // Fall back to cached prices if real-time search returns nothing
   const cached = await searchFlightsAviasales(origin, destination, departureDate, returnDate);
+  if (cached.flights.length > 0) {
+    console.log(`[search] ${origin}→${destination} ${departureDate}: aviasales-cached (${cached.flights.length} results)`);
+  } else {
+    console.warn(`[search] ${origin}→${destination} ${departureDate}: all APIs returned 0 results`);
+  }
   return { ...cached, dataSource: 'aviasales' };
 }
 
