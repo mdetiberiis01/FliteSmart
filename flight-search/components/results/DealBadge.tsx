@@ -38,14 +38,18 @@ const RATING_CONFIG = {
 export function DealBadge({ rating, percent }: Props) {
   const config = RATING_CONFIG[rating] || RATING_CONFIG.unknown;
 
+  const atHistoricalLow = percent !== null && percent <= 0;
+  const percentLabel = !atHistoricalLow && percent !== null && percent > 0
+    ? ` +${Math.round(percent)}%`
+    : null;
+
   return (
     <span
       className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${config.color}`}
     >
       {config.icon && <span>{config.icon}</span>}
-      {config.label}
-      {percent !== null && percent > 0 && ` +${Math.round(percent)}%`}
-      {percent !== null && percent <= 0 && ` ${Math.round(percent)}%`}
+      {atHistoricalLow ? '12-month low' : config.label}
+      {percentLabel}
     </span>
   );
 }

@@ -103,6 +103,9 @@ export function ResultsGrid({ results, isLoading, cabinClass = 'economy', travel
         viewMode={viewMode}
         onViewModeChange={setViewMode}
       />
+      <p className="text-xs text-slate-400 mt-2 mb-4">
+        Deal % shows how far the price is above the 12-month historical low for that route.
+      </p>
 
       {viewMode === 'tiles' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

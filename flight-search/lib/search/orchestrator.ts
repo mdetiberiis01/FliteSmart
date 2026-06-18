@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { SearchParams, SearchResult, PricePoint } from '@/types/search';
 import { resolveDestination } from '../geo/resolve-destination';
 import { resolveRegionAirports } from '../geo/region-map';
@@ -11,6 +13,11 @@ import { AmadeusFlightOffer } from '@/types/amadeus';
 import { searchFlightsAviasales, searchFlightsAviasalesRealtime } from '../aviasales/flight-search';
 import { savePriceSnapshots, updatePriceSummary } from '../supabase/price-cache';
 import { dealRating } from '../utils/deal-rating';
+
+const MOCK_FLAG = path.join(process.cwd(), '.mock-mode');
+export function isMockMode(): boolean {
+  return fs.existsSync(MOCK_FLAG);
+}
 
 // ---------------------------------------------------------------------------
 // Demo data — shown when SerpAPI key is not configured or returns no results
@@ -414,6 +421,12 @@ export async function orchestrateSearch(params: SearchParams, userIp?: string): 
 
   const destinationCodes = await resolveDestination(destination);
   if (!destinationCodes.length) return [];
+
+  if (isMockMode()) {
+    console.log('[search] MOCK MODE — returning sample data, no API calls made');
+    const dateRanges = getDateRanges(flexibility, customDateStart, customDateEnd);
+    return makeDemoResults(origin, destinationCodes, dateRanges, tripDays, cabinClass);
+  }
 
   const dateRanges = getDateRanges(flexibility, customDateStart, customDateEnd);
   if (!dateRanges.length) return [];
