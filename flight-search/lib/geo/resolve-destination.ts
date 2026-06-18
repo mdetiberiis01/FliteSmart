@@ -1,10 +1,30 @@
 import { searchLocations } from '../amadeus/locations';
 import { resolveRegionAirports, REGIONS } from './region-map';
 
-// All airports across all regions — used for "anywhere"
-const ALL_REGION_AIRPORTS = Array.from(
-  new Set(Object.values(REGIONS).flatMap((r) => r.airports))
-);
+// One primary airport per major global region, ordered for diversity.
+// The orchestrator caps at 6, so the first 6 here span 6 different parts of the world.
+const ANYWHERE_AIRPORTS = [
+  'LHR',  // Europe       — London
+  'NRT',  // East Asia    — Tokyo
+  'BKK',  // SE Asia      — Bangkok
+  'DXB',  // Middle East  — Dubai
+  'JNB',  // Africa       — Johannesburg
+  'GRU',  // S. America   — São Paulo
+  'SYD',  // Oceania      — Sydney
+  'DEL',  // South Asia   — New Delhi
+  'MBJ',  // Caribbean    — Montego Bay
+  'ICN',  // East Asia    — Seoul
+  'CDG',  // Europe       — Paris
+  'MNL',  // SE Asia      — Manila
+  'CAI',  // Africa       — Cairo
+  'SCL',  // S. America   — Santiago
+  'AKL',  // Oceania      — Auckland
+  'IST',  // Middle East  — Istanbul
+  'SIN',  // SE Asia      — Singapore
+  'FCO',  // Europe       — Rome
+  'BOG',  // S. America   — Bogotá
+  'NBO',  // Africa       — Nairobi
+];
 
 // Fallback lookup for popular cities — used when Amadeus is not configured
 // prettier-ignore
@@ -41,8 +61,8 @@ const CITY_TO_IATA: Record<string, string[]> = {
 export async function resolveDestination(destination: string): Promise<string[]> {
   const lower = destination.toLowerCase().trim();
 
-  // "anywhere" → every region airport
-  if (lower === 'anywhere') return ALL_REGION_AIRPORTS;
+  // "anywhere" → globally diverse set, one per major region
+  if (lower === 'anywhere') return ANYWHERE_AIRPORTS;
 
   // Check if it's a region
   const regionAirports = resolveRegionAirports(destination);

@@ -25,6 +25,7 @@ function formatLegDate(dateStr: string): string {
   });
 }
 
+
 interface LegRowProps {
   airlineCode: string;
   date: string;

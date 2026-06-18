@@ -1,7 +1,6 @@
 import { SearchResult } from '@/types/search';
 
 export function mergeAndDeduplicateResults(results: SearchResult[]): SearchResult[] {
-  // Deduplicate by destination + departure month
   const seen = new Map<string, SearchResult>();
 
   for (const result of results) {

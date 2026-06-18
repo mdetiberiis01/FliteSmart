@@ -23,6 +23,7 @@ function formatLegDate(dateStr: string): string {
   });
 }
 
+
 const GOOGLE_CABIN: Record<string, string> = { economy: 'e', premium_economy: 'p', business: 'b', first: 'f' };
 
 export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1 }: Props) {
