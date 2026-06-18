@@ -333,14 +333,15 @@ async function searchFlightsWithFallback(
   destination: string,
   departureDate: string,
   returnDate?: string,
-  userIp?: string
+  userIp?: string,
+  cabinClass = 'economy'
 ): Promise<{ flights: import('../serpapi/flight-search').FlightResult[]; pricePoints: PricePoint[]; dataSource: 'tequila' | 'serpapi' | 'amadeus' | 'aviasales' }> {
   const tequila = await searchFlightsTequila(origin, destination, departureDate, returnDate);
   if (tequila.flights.length > 0) {
     console.log(`[search] ${origin}→${destination} ${departureDate}: tequila (${tequila.flights.length} results)`);
     return { ...tequila, dataSource: 'tequila' };
   }
-  const serp = await searchFlights(origin, destination, departureDate, returnDate);
+  const serp = await searchFlights(origin, destination, departureDate, returnDate, cabinClass);
   if (serp.flights.length > 0) {
     console.log(`[search] ${origin}→${destination} ${departureDate}: serpapi (${serp.flights.length} results)`);
     return { ...serp, dataSource: 'serpapi' };
@@ -434,7 +435,7 @@ export async function orchestrateSearch(params: SearchParams, userIp?: string): 
     await Promise.all(
       targets.map(async (destCode) => {
         const searches = await Promise.all(
-          searchDates.map((dep) => searchFlightsWithFallback(origin, destCode, dep, addDays(dep, tripDays), userIp))
+          searchDates.map((dep) => searchFlightsWithFallback(origin, destCode, dep, addDays(dep, tripDays), userIp, cabinClass))
         );
 
         const combinedPricePoints: PricePoint[] = [];
@@ -456,7 +457,7 @@ export async function orchestrateSearch(params: SearchParams, userIp?: string): 
     const destCode = destinationCodes[0];
 
     const searches = await Promise.all(
-      searchDates.map((dep) => searchFlightsWithFallback(origin, destCode, dep, addDays(dep, tripDays), userIp))
+      searchDates.map((dep) => searchFlightsWithFallback(origin, destCode, dep, addDays(dep, tripDays), userIp, cabinClass))
     );
 
     for (const { flights, pricePoints, dataSource } of searches) {

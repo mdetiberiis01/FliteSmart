@@ -25,6 +25,14 @@ function minutesToIsoDuration(minutes: number): string {
   return m > 0 ? `PT${h}H${m}M` : `PT${h}H`;
 }
 
+// Maps our cabin class names to SerpAPI travel_class values
+const SERPAPI_CABIN: Record<string, string> = {
+  economy: '1',
+  premium_economy: '2',
+  business: '3',
+  first: '4',
+};
+
 function shiftDate(date: string, days: number): string {
   const d = new Date(date + 'T00:00:00');
   d.setDate(d.getDate() + days);
@@ -33,7 +41,8 @@ function shiftDate(date: string, days: number): string {
 
 async function fetchOnce(
   origin: string, destination: string,
-  departureDate: string, returnDate: string | undefined
+  departureDate: string, returnDate: string | undefined,
+  cabinClass: string
 ): Promise<SerpApiFlightsResponse | null> {
   const url = new URL('https://serpapi.com/search');
   url.searchParams.set('engine', 'google_flights');
@@ -46,6 +55,7 @@ async function fetchOnce(
   } else {
     url.searchParams.set('type', '2');
   }
+  url.searchParams.set('travel_class', SERPAPI_CABIN[cabinClass] ?? '1');
   url.searchParams.set('currency', 'USD');
   url.searchParams.set('hl', 'en');
   url.searchParams.set('gl', 'us');
@@ -68,7 +78,8 @@ export async function searchFlights(
   origin: string,
   destination: string,
   departureDate: string,
-  returnDate?: string
+  returnDate?: string,
+  cabinClass = 'economy'
 ): Promise<{ flights: FlightResult[]; pricePoints: PricePoint[] }> {
   if (!SERPAPI_KEY) {
     console.error('[serpapi] SERPAPI_KEY is not set — no live flight data will be returned');
@@ -81,7 +92,7 @@ export async function searchFlights(
     for (const offset of [0, 2, 4]) {
       const dep = shiftDate(departureDate, offset);
       const ret = returnDate ? shiftDate(returnDate, offset) : undefined;
-      data = await fetchOnce(origin, destination, dep, ret);
+      data = await fetchOnce(origin, destination, dep, ret, cabinClass);
       const count = (data?.best_flights?.length ?? 0) + (data?.other_flights?.length ?? 0);
       if (count > 0) break;
     }

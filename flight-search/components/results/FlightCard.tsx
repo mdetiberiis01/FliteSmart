@@ -54,19 +54,16 @@ const GOOGLE_CABIN: Record<string, string> = { economy: 'e', premium_economy: 'p
 
 export function FlightCard({ result, index, cabinClass = 'economy', travelers = 1 }: Props) {
   function handleClick() {
-    // Use bookingUrl only if it's already a Google Flights link (from SerpAPI)
+    const origin = result.origin || '';
+    const dest = result.destination || '';
+    const dep = result.departureDate || '';
+    const cabin = GOOGLE_CABIN[cabinClass] ?? 'e';
+    // Always build the URL with cabin class so first/business/etc. is pre-selected.
+    // SerpAPI's google_flights_url includes cabin when travel_class is passed, so
+    // prefer it; fall back to the #search format for non-SerpAPI sources.
     const url = result.bookingUrl?.startsWith('https://www.google.com')
       ? result.bookingUrl
-      : (() => {
-          const origin = result.origin || '';
-          const dest = result.destination || '';
-          const dep = result.departureDate || '';
-          const cabin = GOOGLE_CABIN[cabinClass] ?? 'e';
-          const legs = result.returnDate
-            ? `${origin}.${dest}.${dep}*${dest}.${origin}.${result.returnDate}`
-            : `${origin}.${dest}.${dep}`;
-          return `https://www.google.com/travel/flights#flt=${legs};c:USD;e:${travelers};t:${cabin}`;
-        })();
+      : `https://www.google.com/travel/flights#search;f=${origin};t=${dest};d=${dep}${result.returnDate ? `;r=${result.returnDate}` : ''};tt=${cabin};tc=${travelers}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   }
 
