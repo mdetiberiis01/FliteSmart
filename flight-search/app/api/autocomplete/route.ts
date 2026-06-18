@@ -31,9 +31,82 @@ interface TpCountry {
   name: string;
 }
 
+// Primary airport for each city — shown first when the city name is searched.
+// Score bonus applied on top of the text-match score.
+const AIRPORT_PRIORITY: Record<string, number> = {
+  // North America
+  JFK: 30, LGA: 20, EWR: 15, // New York
+  LAX: 30, BUR: 15, LGB: 15, ONT: 10, // Los Angeles
+  ORD: 30, MDW: 20,           // Chicago
+  SFO: 30, OAK: 20, SJC: 15, // San Francisco
+  MIA: 30, FLL: 20,           // Miami
+  BOS: 30,                    // Boston
+  ATL: 30,                    // Atlanta
+  DFW: 30, DAL: 20,           // Dallas
+  SEA: 30,                    // Seattle
+  DEN: 30,                    // Denver
+  LAS: 30,                    // Las Vegas
+  MSP: 30,                    // Minneapolis
+  DTW: 30,                    // Detroit
+  PHL: 30,                    // Philadelphia
+  PHX: 30,                    // Phoenix
+  IAH: 30, HOU: 20,           // Houston
+  DCA: 25, IAD: 30, BWI: 20,  // Washington DC
+  YYZ: 30, YUL: 30, YVR: 30, // Canada
+  MEX: 30, CUN: 25,           // Mexico
+  // Europe
+  LHR: 30, LGW: 20, STN: 15, LTN: 10, // London
+  CDG: 30, ORY: 20,           // Paris
+  FCO: 30, CIA: 15,           // Rome
+  MXP: 30, LIN: 15,           // Milan
+  MAD: 30,                    // Madrid
+  BCN: 30,                    // Barcelona
+  AMS: 30,                    // Amsterdam
+  FRA: 30, MUC: 30,           // Germany
+  VIE: 30,                    // Vienna
+  ZRH: 30,                    // Zurich
+  BRU: 30,                    // Brussels
+  LIS: 30,                    // Lisbon
+  ATH: 30,                    // Athens
+  IST: 30, SAW: 15,           // Istanbul
+  CPH: 30,                    // Copenhagen
+  ARN: 30,                    // Stockholm
+  OSL: 30,                    // Oslo
+  HEL: 30,                    // Helsinki
+  DUB: 30,                    // Dublin
+  WAW: 30,                    // Warsaw
+  PRG: 30,                    // Prague
+  BUD: 30,                    // Budapest
+  // Middle East & Africa
+  DXB: 30, AUH: 25,           // UAE
+  DOH: 30,                    // Doha
+  TLV: 30,                    // Tel Aviv
+  CAI: 30,                    // Cairo
+  JNB: 30, CPT: 25,           // South Africa
+  NBO: 30,                    // Nairobi
+  ADD: 30,                    // Addis Ababa
+  CMN: 30,                    // Casablanca
+  // Asia Pacific
+  NRT: 30, HND: 25,           // Tokyo
+  ICN: 30, GMP: 15,           // Seoul
+  PEK: 30, PKX: 15,           // Beijing
+  PVG: 30, SHA: 15,           // Shanghai
+  HKG: 30,                    // Hong Kong
+  TPE: 30,                    // Taipei
+  SIN: 30,                    // Singapore
+  BKK: 30, DMK: 15,           // Bangkok
+  KUL: 30,                    // Kuala Lumpur
+  CGK: 30,                    // Jakarta
+  MNL: 30,                    // Manila
+  DPS: 30,                    // Bali
+  DEL: 30, BOM: 30, BLR: 25, // India
+  SYD: 30, MEL: 30, BNE: 25, // Australia
+  AKL: 30,                    // Auckland
+};
+
 // In-memory cache — populated once per server process
 let airportIndex: AutocompleteResult[] | null = null;
-const INDEX_VERSION = 2; // bump to invalidate cache when filter logic changes
+const INDEX_VERSION = 3; // bump to invalidate cache when filter logic changes
 let indexVersion = 0;
 
 async function buildIndex(): Promise<AutocompleteResult[]> {
@@ -97,17 +170,20 @@ function scoreMatch(result: AutocompleteResult, q: string): number {
   const city = result.cityName.toLowerCase();
   const country = result.countryName.toLowerCase();
 
-  if (code === ql) return 100;
-  if (city === ql) return 95;
-  if (name === ql) return 90;
-  if (code.startsWith(ql)) return 85;
-  if (city.startsWith(ql)) return 80;
-  if (name.startsWith(ql)) return 75;
-  if (city.includes(ql)) return 60;
-  if (name.includes(ql)) return 55;
-  if (country.startsWith(ql)) return 40;
-  if (country.includes(ql)) return 30;
-  return 0;
+  let base = 0;
+  if (code === ql) base = 100;
+  else if (city === ql) base = 95;
+  else if (name === ql) base = 90;
+  else if (code.startsWith(ql)) base = 85;
+  else if (city.startsWith(ql)) base = 80;
+  else if (name.startsWith(ql)) base = 75;
+  else if (city.includes(ql)) base = 60;
+  else if (name.includes(ql)) base = 55;
+  else if (country.startsWith(ql)) base = 40;
+  else if (country.includes(ql)) base = 30;
+
+  if (base === 0) return 0;
+  return base + (AIRPORT_PRIORITY[result.iataCode] ?? 0);
 }
 
 function searchAirports(q: string, limit = 8): AutocompleteResult[] {
