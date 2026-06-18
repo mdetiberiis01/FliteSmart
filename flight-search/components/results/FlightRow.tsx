@@ -63,16 +63,23 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
           {/* Outbound leg */}
           <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2.5">
             <AirlineLogo code={result.airlineCode} size={24} />
-            <RouteBar
-              from={result.origin}
-              to={result.destination}
-              stops={result.stops}
-              layovers={result.layovers}
-              layoverDurations={result.layoverDurations}
-              fromDate={formatLegDate(result.departureDate)}
-            />
+            <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+              <RouteBar
+                from={result.origin}
+                to={result.destination}
+                stops={result.stops}
+                layovers={result.layovers}
+                layoverDurations={result.layoverDurations}
+                fromDate={formatLegDate(result.departureDate)}
+              />
+              {result.duration && (
+                <span className="text-[10px] text-slate-400 tabular-nums sm:hidden">
+                  {formatDuration(result.duration)}
+                </span>
+              )}
+            </div>
             {result.duration && (
-              <span className="text-xs text-slate-400 shrink-0 hidden md:block tabular-nums">
+              <span className="text-xs text-slate-400 shrink-0 hidden sm:block tabular-nums">
                 {formatDuration(result.duration)}
               </span>
             )}
@@ -82,16 +89,23 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
           {result.returnDate && (
             <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2.5">
               <AirlineLogo code={result.airlineCode} size={24} />
-              <RouteBar
-                from={result.destination}
-                to={result.origin}
-                stops={result.stops}
-                layovers={result.layovers}
-                layoverDurations={result.layoverDurations}
-                fromDate={formatLegDate(result.returnDate)}
-              />
+              <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                <RouteBar
+                  from={result.destination}
+                  to={result.origin}
+                  stops={result.stops}
+                  layovers={result.layovers}
+                  layoverDurations={result.layoverDurations}
+                  fromDate={formatLegDate(result.returnDate)}
+                />
+                {result.duration && (
+                  <span className="text-[10px] text-slate-400 tabular-nums sm:hidden">
+                    {formatDuration(result.duration)}
+                  </span>
+                )}
+              </div>
               {result.duration && (
-                <span className="text-xs text-slate-400 shrink-0 hidden md:block tabular-nums">
+                <span className="text-xs text-slate-400 shrink-0 hidden sm:block tabular-nums">
                   {formatDuration(result.duration)}
                 </span>
               )}
