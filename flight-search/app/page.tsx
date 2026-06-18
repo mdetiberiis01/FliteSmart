@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { TrendingUp, CalendarDays, Globe } from 'lucide-react';
@@ -46,10 +46,37 @@ export default function Home() {
   const hook = useSearchForm();
   const { user } = useAuth();
   const homeAirport = user?.user_metadata?.home_airport as string | undefined;
+  const homeAirportName = user?.user_metadata?.home_airport_name as string | undefined;
   const router = useRouter();
   const [needsOrigin, setNeedsOrigin] = useState(false);
 
+  // Auto-request location on page load to pre-fill origin
+  useEffect(() => {
+    if (homeAirport || !('geolocation' in navigator)) return;
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const res = await fetch(`/api/nearest-airport?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data.iataCode && !hook.form.origin) {
+            hook.updateField('origin', data.iataCode);
+            hook.updateField('originName', data.label || data.iataCode);
+          }
+        } catch {}
+      },
+      () => {} // permission denied — silently skip
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [homeAirport]);
+
   function handleTrendingSelect(dest: TrendingDest) {
+    // If we have a real booking URL from SerpAPI, open it directly
+    if (dest.bookingUrl) {
+      window.open(dest.bookingUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    // Fallback: navigate to results page
     hook.updateField('destination', dest.destination);
     if (hook.form.origin) {
       setNeedsOrigin(false);
@@ -146,9 +173,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <TrendingDestinations
             onSelect={handleTrendingSelect}
-            homeAirport={homeAirport}
-            selectedOrigin={hook.form.origin || undefined}
-            selectedOriginName={hook.form.originName || hook.form.origin || undefined}
+            origin={hook.form.origin || homeAirport}
+            originName={hook.form.originName || homeAirportName || hook.form.origin || homeAirport}
           />
         </div>
       </section>
