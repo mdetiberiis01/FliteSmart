@@ -33,9 +33,12 @@ interface TpCountry {
 
 // In-memory cache — populated once per server process
 let airportIndex: AutocompleteResult[] | null = null;
+const INDEX_VERSION = 2; // bump to invalidate cache when filter logic changes
+let indexVersion = 0;
 
 async function buildIndex(): Promise<AutocompleteResult[]> {
-  if (airportIndex) return airportIndex;
+  if (airportIndex && indexVersion === INDEX_VERSION) return airportIndex;
+  airportIndex = null;
 
   const [airportsRes, citiesRes, countriesRes] = await Promise.all([
     fetch('https://api.travelpayouts.com/data/en/airports.json', { next: { revalidate: 86400 } }),
@@ -59,8 +62,15 @@ async function buildIndex(): Promise<AutocompleteResult[]> {
     if (c.code && c.name) countryMap.set(c.code, c.name);
   }
 
+  const NON_AIRPORT_TERMS = /railway|railroad|train|bus station|bus terminal|ferry|seaport|heliport|harbour|harbor|port of/i;
+
   airportIndex = airports
-    .filter((a) => a.code?.length === 3 && a.city_code?.length === 3 && a.flightable)
+    .filter((a) =>
+      a.code?.length === 3 &&
+      a.city_code?.length === 3 &&
+      a.flightable &&
+      !NON_AIRPORT_TERMS.test(a.name || '')
+    )
     .map((a) => {
       const cityName = cityMap.get(a.city_code) || '';
       const countryName = countryMap.get(a.country_code) || '';
@@ -76,6 +86,7 @@ async function buildIndex(): Promise<AutocompleteResult[]> {
       };
     });
 
+  indexVersion = INDEX_VERSION;
   return airportIndex;
 }
 
