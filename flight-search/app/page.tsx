@@ -71,31 +71,45 @@ export default function Home() {
   }, [homeAirport]);
 
   function handleTrendingSelect(dest: TrendingDest) {
-    // If we have a real booking URL from SerpAPI, open it directly
-    if (dest.bookingUrl) {
-      window.open(dest.bookingUrl, '_blank', 'noopener,noreferrer');
-      return;
-    }
-    // Fallback: navigate to results page
-    hook.updateField('destination', dest.destination);
-    if (hook.form.origin) {
-      setNeedsOrigin(false);
-      const params = new URLSearchParams({
-        origin: hook.form.origin,
-        originName: hook.form.originName || hook.form.origin,
-        destination: dest.destination,
-        flexibility: hook.form.flexibility,
-        tripDays: String(hook.form.tripDays ?? 7),
-      });
-      router.push(`/results?${params.toString()}`);
-    } else {
+    const origin = hook.form.origin;
+    if (!origin) {
       setNeedsOrigin(true);
       setTimeout(() => {
         const input = document.querySelector<HTMLInputElement>('input[placeholder*="City, airport"]');
         input?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         input?.focus();
       }, 50);
+      return;
     }
+
+    setNeedsOrigin(false);
+
+    // Go directly to the Google Flights link for this exact flight
+    if (dest.bookingUrl) {
+      window.open(dest.bookingUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    // Fallback: results page locked to the tile's date
+    hook.updateField('destination', dest.destination);
+    const params = new URLSearchParams({
+      origin,
+      originName: hook.form.originName || origin,
+      destination: dest.destination,
+      tripDays: String(hook.form.tripDays ?? 7),
+      cabinClass: hook.form.cabinClass ?? 'economy',
+      travelers: String(hook.form.travelers ?? 1),
+    });
+    if (dest.departureDate) {
+      const end = new Date(dest.departureDate + 'T00:00:00');
+      end.setDate(end.getDate() + 4);
+      params.set('flexibility', 'custom');
+      params.set('customDateStart', dest.departureDate);
+      params.set('customDateEnd', end.toISOString().split('T')[0]);
+    } else {
+      params.set('flexibility', hook.form.flexibility);
+    }
+    router.push(`/results?${params.toString()}`);
   }
 
   return (
