@@ -417,7 +417,7 @@ function buildResult(
 // ---------------------------------------------------------------------------
 
 export async function orchestrateSearch(params: SearchParams, userIp?: string): Promise<SearchResult[]> {
-  const { origin, destination, flexibility, customDateStart, customDateEnd, tripDays = 7, cabinClass = 'economy', travelers = 1 } = params;
+  const { origin, destination, flexibility, customDateStart, customDateEnd, tripDays = 7, cabinClass = 'economy', travelers = 1, maxBudget } = params;
 
   const destinationCodes = await resolveDestination(destination);
   if (!destinationCodes.length) return [];
@@ -483,8 +483,10 @@ export async function orchestrateSearch(params: SearchParams, userIp?: string): 
 
   const merged = mergeAndDeduplicateResults(allResults);
 
-  if (merged.length === 0) {
-    return [];
+  if (merged.length === 0) return [];
+
+  if (maxBudget && maxBudget > 0) {
+    return merged.filter((r) => r.price <= maxBudget);
   }
 
   return merged;

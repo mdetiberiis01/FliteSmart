@@ -29,6 +29,7 @@ function ResultsContent() {
   const tripDays = parseInt(searchParams.get('tripDays') || '7', 10);
   const cabinClass = searchParams.get('cabinClass') || 'economy';
   const travelers = parseInt(searchParams.get('travelers') || '1', 10);
+  const maxBudget = parseInt(searchParams.get('maxBudget') || '0', 10);
 
   useEffect(() => {
     if (!origin || !destination) {
@@ -50,6 +51,7 @@ function ResultsContent() {
         tripDays,
         cabinClass,
         travelers,
+        maxBudget: maxBudget || undefined,
         customDateStart: searchParams.get('customDateStart') || undefined,
         customDateEnd: searchParams.get('customDateEnd') || undefined,
       }),
