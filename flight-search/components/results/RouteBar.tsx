@@ -43,16 +43,15 @@ export function RouteBar({ from, to, stops, layovers, layoverDurations, fromDate
             <div key={i} className="contents">
               <div className="flex-1 h-px bg-slate-300" />
               <div className="flex flex-col items-center shrink-0 gap-[2px]">
-                {/* Always reserve the same height as the date label above */}
                 <span className="h-[11px] block" />
                 <span className="w-[6px] h-[6px] rounded-full bg-slate-400 block" />
                 {label && (
-                  <span className="text-[9px] leading-none text-slate-400 font-medium whitespace-nowrap">
+                  <span className="hidden sm:block text-[9px] leading-none text-slate-400 font-medium whitespace-nowrap">
                     {label}
                   </span>
                 )}
                 {layoverDurations?.[i] != null && (
-                  <span className="text-[8px] leading-none text-slate-400 whitespace-nowrap tabular-nums">
+                  <span className="hidden sm:block text-[8px] leading-none text-slate-400 whitespace-nowrap tabular-nums">
                     {formatStopDuration(layoverDurations[i])}
                   </span>
                 )}

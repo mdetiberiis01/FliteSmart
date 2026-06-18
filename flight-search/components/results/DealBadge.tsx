@@ -47,9 +47,20 @@ export function DealBadge({ rating, percent }: Props) {
     <span
       className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${config.color}`}
     >
-      {config.icon && <span>{config.icon}</span>}
-      {atHistoricalLow ? '12-month low' : config.label}
-      {percentLabel}
+      {/* Mobile: just show +X% (or ✓ for historical low) */}
+      <span className="sm:hidden">
+        {atHistoricalLow
+          ? '✓ low'
+          : percentLabel
+          ? percentLabel.trim()
+          : config.label.split(' ')[0]}
+      </span>
+      {/* Desktop: full label */}
+      <span className="hidden sm:inline">
+        {config.icon && <span>{config.icon} </span>}
+        {atHistoricalLow ? '12-month low' : config.label}
+        {percentLabel}
+      </span>
     </span>
   );
 }

@@ -48,11 +48,11 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
       <div className="flex items-stretch gap-0">
 
         {/* ── Left: destination name ── */}
-        <div className="px-3 py-3 flex flex-col justify-center w-24 sm:w-36 shrink-0 border-r border-slate-100">
-          <div className="font-semibold text-slate-900 text-xs sm:text-sm leading-tight truncate">
+        <div className="px-2 sm:px-3 py-3 flex flex-col justify-center w-24 sm:w-36 shrink-0 border-r border-slate-100">
+          <div className="font-semibold text-slate-900 text-xs sm:text-sm leading-tight break-words">
             {result.destinationCity || result.destination}
           </div>
-          <div className="text-xs text-slate-400 truncate mt-0.5">
+          <div className="text-xs text-slate-400 break-words mt-0.5">
             {result.destinationCountry}
           </div>
         </div>
@@ -61,8 +61,8 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
         <div className="flex-1 min-w-0 divide-y divide-slate-100">
 
           {/* Outbound leg */}
-          <div className="flex items-center gap-3 px-4 py-2.5">
-            <AirlineLogo code={result.airlineCode} size={28} />
+          <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2.5">
+            <AirlineLogo code={result.airlineCode} size={24} />
             <RouteBar
               from={result.origin}
               to={result.destination}
@@ -80,8 +80,8 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
 
           {/* Return leg (round-trip only) */}
           {result.returnDate && (
-            <div className="flex items-center gap-3 px-4 py-2.5">
-              <AirlineLogo code={result.airlineCode} size={28} />
+            <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2.5">
+              <AirlineLogo code={result.airlineCode} size={24} />
               <RouteBar
                 from={result.destination}
                 to={result.origin}

@@ -77,8 +77,8 @@ export function FlightCard({ result, index, cabinClass = 'economy', travelers = 
     >
       {/* Header: destination + price */}
       <div className="flex items-start justify-between px-5 pt-4 pb-3">
-        <div>
-          <h3 className="text-slate-900 font-semibold text-lg leading-tight">
+        <div className="min-w-0 flex-1 pr-3">
+          <h3 className="text-slate-900 font-semibold text-lg leading-tight break-words">
             {result.destinationCity || result.destination}
           </h3>
           <p className="text-slate-500 text-sm">{result.destinationCountry}</p>
