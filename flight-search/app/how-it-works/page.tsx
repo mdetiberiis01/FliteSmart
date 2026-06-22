@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CalendarDays, TrendingUp, Tag, Bell } from 'lucide-react';
+import { CalendarDays, TrendingUp, Tag, Bell, SlidersHorizontal, Globe, ArrowLeftRight, ExternalLink } from 'lucide-react';
 import { Nav } from '@/components/ui/Nav';
 import { Footer } from '@/components/ui/Footer';
 
@@ -7,22 +7,42 @@ const SECTIONS = [
   {
     Icon: CalendarDays,
     title: 'Flexible Date Search',
-    desc: 'Search by season (Spring, Summer, Fall, Winter) or Anytime — no need to lock in exact dates to discover great prices. We scan the full window and surface the cheapest results.',
+    desc: 'No fixed dates needed. Search by Spring, Summer, Fall, Winter, or Anytime and we scan the full window to surface the cheapest departure dates. Prefer exact dates? Use the custom date range picker.',
+  },
+  {
+    Icon: ArrowLeftRight,
+    title: 'One-Way & Round-Trip',
+    desc: 'Choose one-way or round-trip before you search. Set your trip length with presets (3, 5, 7, 10, 14, 21 days) or enter any custom length. One-way searches hide the return leg and price accordingly.',
+  },
+  {
+    Icon: Globe,
+    title: 'Region & Anywhere Search',
+    desc: 'Not sure where you want to go? Type "Southeast Asia", "Europe", or "Anywhere" as your destination. We spread searches across the best airports in that region and return one result per destination so you can compare.',
+  },
+  {
+    Icon: SlidersHorizontal,
+    title: 'Filters & Sort',
+    desc: 'A Kayak-style filter sidebar lets you narrow results by number of stops, departure and arrival time window, max price, max duration, and airline. Departure and arrival time sliders are linked — the arrival window automatically enforces a minimum gap based on the shortest flight in your results so you never filter yourself into zero results. Sort by price, date, duration, fewest stops, or best deal.',
   },
   {
     Icon: TrendingUp,
     title: '12-Month Price History',
-    desc: 'Every result shows a sparkline of prices over the past year. You can instantly see if a price is a genuine low or just average.',
+    desc: 'Every result card shows a sparkline of prices over the past year pulled from real booking data. You can instantly see whether today\'s price is a seasonal low, a spike, or just average — without having to remember what you paid last time.',
   },
   {
     Icon: Tag,
     title: 'Deal Ratings',
-    desc: "We compare each price to its 12-month average and label it: Great, Good, Fair, or High. No guessing whether you're getting a deal.",
+    desc: 'We compare each price to its 12-month historical average and label it Great, Good, Fair, or Above Average. The deal percentage tells you exactly how far above or below the average the price sits.',
+  },
+  {
+    Icon: ExternalLink,
+    title: 'Book Direct on Google Flights',
+    desc: 'Every result links directly to Google Flights for that exact route and date — no middleman, no booking fees. You compare here and book there.',
   },
   {
     Icon: Bell,
     title: 'Price Alerts',
-    desc: "Set a max price for any route. We'll email you when prices drop below it, or when we spot an unusually cheap deal.",
+    desc: 'Set a target price for any route and we\'ll email you when fares drop below it. Alerts run daily so you\'re notified quickly without having to check back manually.',
   },
 ];
 
@@ -39,7 +59,7 @@ export default function HowItWorksPage() {
             How FliteSmart works
           </h1>
           <p className="text-slate-500 text-lg">
-            Four features that help you find cheaper flights, faster.
+            Everything you need to find the right flight at the right price.
           </p>
         </div>
       </section>
