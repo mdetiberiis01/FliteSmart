@@ -64,8 +64,8 @@ export function SearchForm({ hook: externalHook }: Props) {
           }}
         />
 
-        {/* Trip duration */}
-        <div>
+        {/* Trip duration — hidden for one-way searches */}
+        <div className={(form.tripType === 'oneway') ? 'hidden' : ''}>
           <label className="block text-sm text-slate-600 mb-2">Trip length</label>
           <div className="flex flex-wrap items-center gap-2">
             {TRIP_DAY_PRESETS.map((days) => (

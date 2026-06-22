@@ -151,10 +151,14 @@ function ResultsContent() {
               <span className="text-slate-500 text-sm">From {originName}</span>
               <span className="text-slate-300">·</span>
               <span className="text-slate-500 text-sm">{flexLabel}</span>
-              <span className="text-slate-300">·</span>
-              <span className="bg-slate-100 border border-slate-200 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-full">
-                {tripDays} day{tripDays !== 1 ? 's' : ''}
-              </span>
+              {tripType !== 'oneway' && (
+                <>
+                  <span className="text-slate-300">·</span>
+                  <span className="bg-slate-100 border border-slate-200 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-full">
+                    {tripDays} day{tripDays !== 1 ? 's' : ''}
+                  </span>
+                </>
+              )}
               <span className="text-slate-300">·</span>
               <span className="text-slate-500 text-sm">
                 {tripType === 'oneway' ? 'Prices per person one-way' : 'Prices per person roundtrip'}
