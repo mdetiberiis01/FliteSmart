@@ -45,7 +45,21 @@ export async function GET(request: NextRequest) {
   if (!origin) return NextResponse.json({ destinations: [] });
 
   if (isMockMode()) {
-    return NextResponse.json({ destinations: MOCK_TRENDING });
+    // Add realistic dates (~6 weeks out) so the hover tooltip works in dev mode
+    const dep = new Date();
+    dep.setDate(dep.getDate() + 42);
+    const departureDate = dep.toISOString().split('T')[0];
+    const ret = new Date(dep);
+    ret.setDate(ret.getDate() + 7);
+    const returnDate = ret.toISOString().split('T')[0];
+    const withDates = MOCK_TRENDING.map((d, i) => {
+      const d2 = new Date(dep);
+      d2.setDate(d2.getDate() + i * 2); // stagger departure dates slightly
+      const r2 = new Date(d2);
+      r2.setDate(r2.getDate() + 7);
+      return { ...d, departureDate: d2.toISOString().split('T')[0], returnDate: r2.toISOString().split('T')[0] };
+    });
+    return NextResponse.json({ destinations: withDates });
   }
 
   const hit = cache.get(origin);
