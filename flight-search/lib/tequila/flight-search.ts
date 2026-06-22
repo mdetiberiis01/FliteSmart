@@ -82,7 +82,7 @@ export async function searchFlightsTequila(
           bookingUrl: item.deep_link as string | undefined,
         };
       })
-      .sort((a, b) => a.price - b.price);
+      .sort((a, b) => (a.price + a.stops * 60) - (b.price + b.stops * 60));
 
     return { flights, pricePoints: [] };
   } catch (err) {
