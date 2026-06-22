@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/supabase/client';
+import { createClient } from '@supabase/supabase-js';
+
+function getAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  return createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,16 +25,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const supabase = getSupabase();
+    const admin = getAdminClient();
 
-    const { data, error } = await supabase.auth.signUp({
+    // Use admin.createUser with email_confirm: true to skip the confirmation
+    // email entirely — avoids SMTP dependency and lets users sign in immediately.
+    const { data, error } = await admin.auth.admin.createUser({
       email,
       password,
-      options: {
-        data: {
-          full_name: name,
-          ...(homeAirport ? { home_airport: homeAirport, home_airport_name: homeAirportName ?? homeAirport } : {}),
-        },
+      email_confirm: true,
+      user_metadata: {
+        full_name: name,
+        ...(homeAirport ? { home_airport: homeAirport, home_airport_name: homeAirportName ?? homeAirport } : {}),
       },
     });
 
