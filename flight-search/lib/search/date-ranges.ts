@@ -94,19 +94,18 @@ export function getDateRanges(
 
   // Season-based
   const seasonMonths = SEASONS[flexibility as keyof typeof SEASONS] || SEASONS.spring;
+
+  // Anchor the year off the LAST month of the season so all months stay consistent.
+  // Using the first month breaks when searched mid-season (e.g. June 22 with summer:
+  // firstMonth===currentMonth && day>15 → June→2027, but July/Aug stay 2026, inverting
+  // the range and generating zero dates). The last month never has this issue.
+  const lastSeasonMonth = seasonMonths[seasonMonths.length - 1];
+  const baseYear = lastSeasonMonth < currentMonth ? currentYear + 1 : currentYear;
+
   const ranges: DateRange[] = [];
-
   for (const month of seasonMonths) {
-    // Determine year: if month is in the past this year, use next year
-    let year = currentYear;
-    if (month < currentMonth || (month === currentMonth && now.getDate() > 15)) {
-      year = currentYear + 1;
-    }
-    // For winter, handle Dec/Jan/Feb split
-    if (flexibility === 'winter' && month === 12 && currentMonth <= 12) {
-      year = currentYear;
-    }
-
+    // Winter spans a year boundary: Dec belongs to the year before Jan/Feb
+    const year = (flexibility === 'winter' && month === 12) ? baseYear - 1 : baseYear;
     ranges.push({
       start: `${year}-${String(month).padStart(2, '0')}-01`,
       end: new Date(year, month, 0).toISOString().split('T')[0],
