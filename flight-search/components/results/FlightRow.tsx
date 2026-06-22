@@ -61,7 +61,7 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
         </div>
 
         {/* ── Middle: flight legs ── */}
-        <div className="flex-1 min-w-0 divide-y divide-slate-100">
+        <div className={`flex-1 min-w-0 divide-y divide-slate-100${isOneWay ? ' flex flex-col justify-center' : ''}`}>
 
           {/* Outbound leg */}
           <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2.5">
