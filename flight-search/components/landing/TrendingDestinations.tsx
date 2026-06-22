@@ -2,6 +2,13 @@
 
 import { useEffect, useState } from 'react';
 
+function formatDateRange(departure?: string, returnDate?: string): string | null {
+  if (!departure) return null;
+  const fmt = (d: string) =>
+    new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return returnDate ? `${fmt(departure)} – ${fmt(returnDate)}` : fmt(departure);
+}
+
 export interface TrendingDest {
   city: string;
   country: string;
@@ -84,23 +91,36 @@ export function TrendingDestinations({ onSelect, origin, originName }: Props) {
               <button
                 key={dest.city}
                 onClick={() => onSelect(dest)}
-                className="group relative h-36 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand text-left"
+                className="group relative h-36 rounded-xl shadow-md hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand text-left"
+                style={{ overflow: 'visible' }}
               >
-                <img
-                  src={dest.photo}
-                  alt={dest.city}
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                {dest.tag && (
-                  <span className="absolute top-2 left-2 text-[10px] font-semibold uppercase tracking-wide bg-brand text-white px-2 py-0.5 rounded-full">
-                    {dest.tag}
-                  </span>
+                {/* Tooltip — outside the clipping wrapper so it can overflow the card */}
+                {formatDateRange(dest.departureDate, dest.returnDate) && (
+                  <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                    <div className="whitespace-nowrap rounded-lg bg-slate-900/90 px-3 py-1.5 text-xs font-medium text-white shadow-lg">
+                      {formatDateRange(dest.departureDate, dest.returnDate)}
+                    </div>
+                    <div className="mx-auto w-2 h-2 bg-slate-900/90 rotate-45 -mt-1" />
+                  </div>
                 )}
-                <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <p className="text-white font-bold text-sm leading-tight">{dest.city}</p>
-                  <p className="text-white/70 text-xs">{dest.country}</p>
-                  <p className="text-[#48cae4] font-semibold text-sm mt-0.5">from ${dest.price}</p>
+                {/* Inner wrapper clips image + overlays to rounded corners */}
+                <div className="absolute inset-0 rounded-xl overflow-hidden">
+                  <img
+                    src={dest.photo}
+                    alt={dest.city}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  {dest.tag && (
+                    <span className="absolute top-2 left-2 text-[10px] font-semibold uppercase tracking-wide bg-brand text-white px-2 py-0.5 rounded-full">
+                      {dest.tag}
+                    </span>
+                  )}
+                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                    <p className="text-white font-bold text-sm leading-tight">{dest.city}</p>
+                    <p className="text-white/70 text-xs">{dest.country}</p>
+                    <p className="text-[#48cae4] font-semibold text-sm mt-0.5">from ${dest.price}</p>
+                  </div>
                 </div>
               </button>
             ))}

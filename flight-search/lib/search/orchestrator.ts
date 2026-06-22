@@ -44,6 +44,22 @@ const DEMO_DESTINATIONS = [
   // Oceania
   { iataCode: 'SYD', city: 'Sydney',         country: 'Australia',      basePrice: 1100, airline: 'Qantas',            airlineCode: 'QF', stops: 1, duration: 'PT21H' },
 
+  // United States domestic
+  { iataCode: 'ORD', city: 'Chicago',       country: 'United States',  basePrice: 180, airline: 'United Airlines',    airlineCode: 'UA', stops: 0, duration: 'PT2H30M' },
+  { iataCode: 'LAX', city: 'Los Angeles',   country: 'United States',  basePrice: 220, airline: 'Delta Air Lines',    airlineCode: 'DL', stops: 0, duration: 'PT5H30M' },
+  { iataCode: 'MIA', city: 'Miami',         country: 'United States',  basePrice: 160, airline: 'American Airlines', airlineCode: 'AA', stops: 0, duration: 'PT3H' },
+  { iataCode: 'ATL', city: 'Atlanta',       country: 'United States',  basePrice: 150, airline: 'Delta Air Lines',    airlineCode: 'DL', stops: 0, duration: 'PT2H15M' },
+  { iataCode: 'DFW', city: 'Dallas',        country: 'United States',  basePrice: 190, airline: 'American Airlines', airlineCode: 'AA', stops: 0, duration: 'PT3H30M' },
+  { iataCode: 'DEN', city: 'Denver',        country: 'United States',  basePrice: 200, airline: 'United Airlines',    airlineCode: 'UA', stops: 0, duration: 'PT4H' },
+  { iataCode: 'SEA', city: 'Seattle',       country: 'United States',  basePrice: 260, airline: 'Alaska Airlines',   airlineCode: 'AS', stops: 0, duration: 'PT6H' },
+  { iataCode: 'BOS', city: 'Boston',        country: 'United States',  basePrice: 130, airline: 'JetBlue',           airlineCode: 'B6', stops: 0, duration: 'PT1H15M' },
+  { iataCode: 'LAS', city: 'Las Vegas',     country: 'United States',  basePrice: 240, airline: 'Southwest',         airlineCode: 'WN', stops: 0, duration: 'PT5H' },
+  { iataCode: 'SFO', city: 'San Francisco', country: 'United States',  basePrice: 240, airline: 'United Airlines',    airlineCode: 'UA', stops: 0, duration: 'PT6H' },
+  { iataCode: 'PHX', city: 'Phoenix',       country: 'United States',  basePrice: 210, airline: 'Southwest',         airlineCode: 'WN', stops: 0, duration: 'PT4H30M' },
+  { iataCode: 'MSP', city: 'Minneapolis',   country: 'United States',  basePrice: 175, airline: 'Delta Air Lines',    airlineCode: 'DL', stops: 0, duration: 'PT2H45M' },
+  { iataCode: 'DTW', city: 'Detroit',       country: 'United States',  basePrice: 155, airline: 'Delta Air Lines',    airlineCode: 'DL', stops: 0, duration: 'PT1H45M' },
+  { iataCode: 'IAD', city: 'Washington',    country: 'United States',  basePrice: 140, airline: 'United Airlines',    airlineCode: 'UA', stops: 0, duration: 'PT1H30M' },
+  { iataCode: 'HNL', city: 'Honolulu',      country: 'United States',  basePrice: 380, airline: 'Hawaiian Airlines', airlineCode: 'HA', stops: 0, duration: 'PT10H' },
   // Western Europe (extended)
   { iataCode: 'MAD', city: 'Madrid',         country: 'Spain',          basePrice: 400,  airline: 'Iberia',            airlineCode: 'IB', stops: 0, duration: 'PT8H' },
   { iataCode: 'BCN', city: 'Barcelona',      country: 'Spain',          basePrice: 415,  airline: 'Iberia',            airlineCode: 'IB', stops: 0, duration: 'PT8H15M' },
@@ -172,6 +188,9 @@ const DEMO_LAYOVERS: Record<string, string[]> = {
 };
 
 const DEST_DAY_OFFSETS: Record<string, number> = {
+  // United States domestic
+  ORD: 8, LAX: 12, MIA: 10, ATL: 7, DFW: 14, DEN: 9,
+  SEA: 16, BOS: 6, LAS: 18, SFO: 11, PHX: 13, MSP: 20, DTW: 15, IAD: 22, HNL: 17,
   // Western Europe
   LHR: 12, CDG: 8,  FCO: 10, AMS: 9,  MAD: 14, BCN: 17, FRA: 11, LIS: 7,
   ATH: 20, VIE: 13, MUC: 6,  ZRH: 18, DUB: 15, BRU: 22, NAP: 9,  OPO: 16,
@@ -267,6 +286,11 @@ function makeDemoResults(
 // Helpers
 // ---------------------------------------------------------------------------
 
+function isDomesticRoute(origin: string, dest: string): boolean {
+  const o = getAirportInfo(origin);
+  const d = getAirportInfo(dest);
+  return o.country !== '' && o.country === d.country;
+}
 
 function addDays(date: string, days: number): string {
   const d = new Date(date + 'T00:00:00');
@@ -436,7 +460,11 @@ export async function orchestrateSearch(params: SearchParams, userIp?: string): 
 
   // Single-dest: weekly scan for fine-grained cheapest-day detection.
   // Multi-dest: monthly scan (one date per month) to keep API usage reasonable across 8 destinations.
-  const searchDates = generateSearchDates(flexibility, customDateStart, customDateEnd, isMultiDest ? 28 : 7);
+  // Domestic routes: cap at 16 dates (4 months) — people book domestic closer in than
+  // international, and 4 months gives a useful price curve without excessive API calls.
+  const isDomestic = !isMultiDest && isDomesticRoute(origin, destinationCodes[0] ?? '');
+  let searchDates = generateSearchDates(flexibility, customDateStart, customDateEnd, isMultiDest ? 28 : 7);
+  if (isDomestic) searchDates = searchDates.slice(0, 16);
   if (!searchDates.length) return [];
 
   if (isMultiDest) {

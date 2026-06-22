@@ -74,9 +74,9 @@ export function getDateRanges(
   }
 
   if (flexibility === 'anytime') {
-    // Next 6 months
+    // Next 12 months — truly anytime
     const ranges: DateRange[] = [];
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= 12; i++) {
       let month = currentMonth + i;
       let year = currentYear;
       if (month > 12) {
@@ -112,6 +112,17 @@ export function getDateRanges(
       end: new Date(year, month, 0).toISOString().split('T')[0],
       month: `${year}-${String(month).padStart(2, '0')}`,
     });
+  }
+
+  // Extend ±2 weeks around the season edges
+  if (ranges.length > 0) {
+    const firstStart = new Date(ranges[0].start + 'T00:00:00');
+    firstStart.setDate(firstStart.getDate() - 14);
+    ranges[0] = { ...ranges[0], start: firstStart.toISOString().split('T')[0] };
+
+    const lastEnd = new Date(ranges[ranges.length - 1].end + 'T00:00:00');
+    lastEnd.setDate(lastEnd.getDate() + 14);
+    ranges[ranges.length - 1] = { ...ranges[ranges.length - 1], end: lastEnd.toISOString().split('T')[0] };
   }
 
   return ranges;
