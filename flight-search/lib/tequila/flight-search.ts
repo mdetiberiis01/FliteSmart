@@ -61,13 +61,38 @@ export async function searchFlightsTequila(
         const airlines = item.airlines as string[] | undefined;
         const airlineCode = airlines?.[0] ?? '';
         const localDep = item.local_departure as string | undefined;
+        const localArr = item.local_arrival as string | undefined;
         const depDate = localDep ? localDep.split('T')[0] : departureDate;
+        const depHour = localDep ? new Date(localDep).getHours() : undefined;
+        const arrHour = localArr ? new Date(localArr).getHours() : undefined;
         const duration = item.duration as Record<string, number> | undefined;
         const durationSecs = duration?.departure ?? 0;
-        const route = item.route as Array<{ flyTo?: string; cityTo?: string }> | undefined;
-        const stops = Math.max(0, (route?.length ?? 1) - 1);
-        const layovers = route && route.length > 1
-          ? route.slice(0, -1).map((seg) => seg.flyTo ?? '').filter(Boolean)
+        type RouteSeg = { flyTo?: string; cityTo?: string; local_departure?: string; local_arrival?: string };
+        const route = item.route as RouteSeg[] | undefined;
+
+        // For round trips, outbound segments fly toward destination; return segments fly back.
+        // Find split by locating where flyTo === origin (start of return journey).
+        let outboundSegs = route ?? [];
+        let returnSegs: RouteSeg[] = [];
+        if (returnDate && route && route.length > 1) {
+          const splitIdx = route.findIndex((seg) => seg.flyTo?.toUpperCase() === origin.toUpperCase());
+          if (splitIdx > 0) {
+            outboundSegs = route.slice(0, splitIdx);
+            returnSegs = route.slice(splitIdx);
+          }
+        }
+
+        const stops = Math.max(0, outboundSegs.length - 1);
+        const layovers = outboundSegs.length > 1
+          ? outboundSegs.slice(0, -1).map((seg) => seg.flyTo ?? '').filter(Boolean)
+          : undefined;
+
+        const lastReturnSeg = returnSegs.length > 0 ? returnSegs[returnSegs.length - 1] : null;
+        const returnDepHour = lastReturnSeg?.local_departure
+          ? new Date(lastReturnSeg.local_departure).getHours()
+          : undefined;
+        const returnArrHour = lastReturnSeg?.local_arrival
+          ? new Date(lastReturnSeg.local_arrival).getHours()
           : undefined;
 
         return {
@@ -78,6 +103,10 @@ export async function searchFlightsTequila(
           layovers: layovers && layovers.length > 0 ? layovers : undefined,
           duration: secondsToIsoDuration(durationSecs),
           departureDate: depDate,
+          departureHour: depHour,
+          arrivalHour: arrHour,
+          returnDepartureHour: returnDepHour,
+          returnArrivalHour: returnArrHour,
           returnDate,
           bookingUrl: item.deep_link as string | undefined,
         };

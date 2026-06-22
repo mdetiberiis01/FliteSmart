@@ -237,6 +237,9 @@ function makeDemoResults(
   const pool = DEMO_DESTINATIONS.filter((d) => destinationCodes.includes(d.iataCode));
   const selected = pool.length > 0 ? pool : DEMO_DESTINATIONS;
 
+  // Realistic departure hours spread across the day
+  const DEP_HOURS = [7, 9, 6, 13, 17, 11, 8, 20, 14, 10, 15, 18];
+
   return selected.slice(0, 4).map((dest, i) => {
     const range = dateRanges[i % Math.max(dateRanges.length, 1)];
     const rangeStart = new Date((range?.start ?? new Date().toISOString().split('T')[0]) + 'T00:00:00');
@@ -256,6 +259,13 @@ function makeDemoResults(
     const avg12m = history.reduce((s, p) => s + p.price, 0) / history.length;
     const { rating, percent } = dealRating(price, historicalLow);
 
+    const durationMatch = dest.duration.match(/(\d+)H(?:(\d+)M)?/);
+    const durationHours = parseInt(durationMatch?.[1] ?? '0') + Math.round(parseInt(durationMatch?.[2] ?? '0') / 60);
+    const departureHour = DEP_HOURS[i % DEP_HOURS.length];
+    const arrivalHour = (departureHour + durationHours) % 24;
+    const returnDepartureHour = (arrivalHour + 2) % 24;
+    const returnArrivalHour = (returnDepartureHour + durationHours) % 24;
+
     return {
       id: `demo-${origin}-${dest.iataCode}-${i}`,
       origin,
@@ -264,6 +274,10 @@ function makeDemoResults(
       destinationCity: dest.city,
       destinationCountry: dest.country,
       departureDate: depDate,
+      departureHour,
+      arrivalHour,
+      returnDepartureHour,
+      returnArrivalHour,
       returnDate: retDate,
       price,
       currency: 'USD',
@@ -400,7 +414,7 @@ async function searchFlightsWithFallback(
 function buildResult(
   origin: string,
   destCode: string,
-  flight: { price: number; airline: string; airlineCode: string; stops: number; layovers?: string[]; layoverDurations?: number[]; duration: string; departureDate: string; returnDate?: string; bookingUrl?: string; bookingToken?: string },
+  flight: { price: number; airline: string; airlineCode: string; stops: number; layovers?: string[]; layoverDurations?: number[]; duration: string; departureDate: string; departureHour?: number; arrivalHour?: number; returnDepartureHour?: number; returnArrivalHour?: number; returnDate?: string; bookingUrl?: string; bookingToken?: string },
   pricePoints: PricePoint[],
   dataSource: string = 'serpapi'
 ): SearchResult {
@@ -416,6 +430,10 @@ function buildResult(
     destinationCity: info.city,
     destinationCountry: info.country,
     departureDate: flight.departureDate,
+    departureHour: flight.departureHour,
+    arrivalHour: flight.arrivalHour,
+    returnDepartureHour: flight.returnDepartureHour,
+    returnArrivalHour: flight.returnArrivalHour,
     returnDate: flight.returnDate,
     price: flight.price,
     currency: 'USD',

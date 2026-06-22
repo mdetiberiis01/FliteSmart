@@ -20,7 +20,6 @@ export function useSearchForm() {
     tripType: 'roundtrip',
     travelers: 1,
     cabinClass: 'economy',
-    maxBudget: 0,
   });
 
   // Auto-fill origin from home airport when user loads (only if origin is still empty)
@@ -60,7 +59,6 @@ export function useSearchForm() {
       travelers: String(form.travelers ?? 1),
       ...(form.customDateStart && { customDateStart: form.customDateStart }),
       ...(form.customDateEnd && { customDateEnd: form.customDateEnd }),
-      ...((form.maxBudget ?? 0) > 0 && { maxBudget: String(form.maxBudget) }),
     });
 
     router.push(`/results?${params.toString()}`);

@@ -1,18 +1,13 @@
 'use client';
 
-import { SearchResult } from '@/types/search';
-
 export type SortKey = 'price' | 'date' | 'duration' | 'stops' | 'deal';
 export type SortDir = 'asc' | 'desc';
 export type ViewMode = 'tiles' | 'list';
 
 interface Props {
-  results: SearchResult[];
   sortBy: SortKey;
   sortDir: SortDir;
   onSortChange: (key: SortKey, dir: SortDir) => void;
-  filterStops: number | null;
-  onFilterStopsChange: (stops: number | null) => void;
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
 }
@@ -29,8 +24,6 @@ export function SortFilterBar({
   sortBy,
   sortDir,
   onSortChange,
-  filterStops,
-  onFilterStopsChange,
   viewMode,
   onViewModeChange,
 }: Props) {
@@ -64,24 +57,6 @@ export function SortFilterBar({
             </button>
           );
         })}
-      </div>
-
-      {/* Stops filter */}
-      <div className="flex flex-wrap items-center gap-1.5">
-        <span className="text-slate-400 text-xs shrink-0">Stops:</span>
-        {([null, 0, 1, 2] as (number | null)[]).map((stops) => (
-          <button
-            key={String(stops)}
-            onClick={() => onFilterStopsChange(stops)}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
-              filterStops === stops
-                ? 'bg-brand text-white'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
-            }`}
-          >
-            {stops === null ? 'Any' : stops === 0 ? 'Nonstop' : stops === 1 ? '1 stop' : '2+'}
-          </button>
-        ))}
       </div>
 
       {/* View mode toggle */}

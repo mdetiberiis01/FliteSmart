@@ -12,6 +12,10 @@ export interface FlightResult {
   layoverDurations?: number[]; // connection time in minutes for each layover
   duration: string; // ISO 8601, e.g. "PT7H30M"
   departureDate: string;
+  departureHour?: number;
+  arrivalHour?: number;
+  returnDepartureHour?: number;
+  returnArrivalHour?: number;
   returnDate?: string;
   bookingUrl?: string;
   bookingToken?: string;
@@ -105,6 +109,7 @@ export async function searchFlights(
       .filter((it) => (it.price ?? 0) > 0)
       .map((it) => {
         const firstLeg = it.flights?.[0];
+        const lastLeg = it.flights?.[it.flights.length - 1];
         const flightNum = firstLeg?.flight_number ?? '';
         const airlineCode = flightNum.split(' ')[0] ?? '';
         const layoverCodes = it.layovers
@@ -122,6 +127,12 @@ export async function searchFlights(
           layoverDurations: layoverDurations && layoverDurations.length > 0 ? layoverDurations : undefined,
           duration: minutesToIsoDuration(it.total_duration ?? 0),
           departureDate: firstLeg?.departure_airport?.time?.split(' ')[0] ?? departureDate,
+          departureHour: firstLeg?.departure_airport?.time
+            ? parseInt(firstLeg.departure_airport.time.split(' ')[1]?.split(':')[0] ?? '0', 10)
+            : undefined,
+          arrivalHour: lastLeg?.arrival_airport?.time
+            ? parseInt(lastLeg.arrival_airport.time.split(' ')[1]?.split(':')[0] ?? '0', 10)
+            : undefined,
           returnDate,
           bookingUrl: googleFlightsUrl,
           bookingToken: it.booking_token,

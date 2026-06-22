@@ -6,7 +6,6 @@ import { DestinationInput } from './DestinationInput';
 import { DateFlexibilityPicker } from './DateFlexibilityPicker';
 import { SearchButton } from './SearchButton';
 import { TripOptionsBar } from './TripOptionsBar';
-import { BudgetSlider } from './BudgetSlider';
 import { motion } from 'framer-motion';
 
 const TRIP_DAY_PRESETS = [3, 5, 7, 10, 14, 21];
@@ -104,12 +103,6 @@ export function SearchForm({ hook: externalHook }: Props) {
           </div>
         )}
       </div>
-
-      {/* Budget slider */}
-      <BudgetSlider
-        value={form.maxBudget ?? 0}
-        onChange={(v) => updateField('maxBudget', v)}
-      />
 
       {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
 

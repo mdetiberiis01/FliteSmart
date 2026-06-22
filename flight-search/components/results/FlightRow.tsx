@@ -24,6 +24,13 @@ function formatLegDate(dateStr: string): string {
   });
 }
 
+function fmtHour(h: number): string {
+  if (h === 0) return '12am';
+  if (h < 12) return `${h}am`;
+  if (h === 12) return '12pm';
+  return `${h - 12}pm`;
+}
+
 
 const GOOGLE_CABIN: Record<string, string> = { economy: 'e', premium_economy: 'p', business: 'b', first: 'f' };
 
@@ -75,17 +82,24 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
                 layoverDurations={result.layoverDurations}
                 fromDate={formatLegDate(result.departureDate)}
               />
+              <span className="text-[10px] text-slate-400 tabular-nums sm:hidden">
+                {result.duration ? formatDuration(result.duration) : ''}
+                {result.departureHour !== undefined && result.arrivalHour !== undefined &&
+                  ` · ${fmtHour(result.departureHour)} → ${fmtHour(result.arrivalHour)}`}
+              </span>
+            </div>
+            <div className="shrink-0 hidden sm:flex flex-col items-end gap-0.5">
               {result.duration && (
-                <span className="text-[10px] text-slate-400 tabular-nums sm:hidden">
+                <span className="text-xs text-slate-400 tabular-nums">
                   {formatDuration(result.duration)}
                 </span>
               )}
+              {result.departureHour !== undefined && result.arrivalHour !== undefined && (
+                <span className="text-[10px] text-slate-400 tabular-nums">
+                  {fmtHour(result.departureHour)} → {fmtHour(result.arrivalHour)}
+                </span>
+              )}
             </div>
-            {result.duration && (
-              <span className="text-xs text-slate-400 shrink-0 hidden sm:block tabular-nums">
-                {formatDuration(result.duration)}
-              </span>
-            )}
           </div>
 
           {/* Return leg (round-trip only) */}
@@ -101,17 +115,24 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
                   layoverDurations={result.layoverDurations}
                   fromDate={formatLegDate(result.returnDate)}
                 />
+                <span className="text-[10px] text-slate-400 tabular-nums sm:hidden">
+                  {result.duration ? formatDuration(result.duration) : ''}
+                  {result.returnDepartureHour !== undefined && result.returnArrivalHour !== undefined &&
+                    ` · ${fmtHour(result.returnDepartureHour)} → ${fmtHour(result.returnArrivalHour)}`}
+                </span>
+              </div>
+              <div className="shrink-0 hidden sm:flex flex-col items-end gap-0.5">
                 {result.duration && (
-                  <span className="text-[10px] text-slate-400 tabular-nums sm:hidden">
+                  <span className="text-xs text-slate-400 tabular-nums">
                     {formatDuration(result.duration)}
                   </span>
                 )}
+                {result.returnDepartureHour !== undefined && result.returnArrivalHour !== undefined && (
+                  <span className="text-[10px] text-slate-400 tabular-nums">
+                    {fmtHour(result.returnDepartureHour)} → {fmtHour(result.returnArrivalHour)}
+                  </span>
+                )}
               </div>
-              {result.duration && (
-                <span className="text-xs text-slate-400 shrink-0 hidden sm:block tabular-nums">
-                  {formatDuration(result.duration)}
-                </span>
-              )}
             </div>
           )}
         </div>

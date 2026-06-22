@@ -34,6 +34,10 @@ export interface SearchResult {
   layovers?: string[]; // IATA codes of intermediate airports, e.g. ["CDG", "AMS"]
   layoverDurations?: number[]; // connection time in minutes for each layover
   duration: string;
+  departureHour?: number;
+  arrivalHour?: number;
+  returnDepartureHour?: number;
+  returnArrivalHour?: number;
   bookingUrl?: string;
   bookingToken?: string;
   historicalLow: number | null;

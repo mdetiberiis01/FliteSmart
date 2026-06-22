@@ -26,6 +26,12 @@ function formatLegDate(dateStr: string): string {
   });
 }
 
+function fmtHour(h: number): string {
+  if (h === 0) return '12am';
+  if (h < 12) return `${h}am`;
+  if (h === 12) return '12pm';
+  return `${h - 12}pm`;
+}
 
 interface LegRowProps {
   airlineCode: string;
@@ -36,9 +42,11 @@ interface LegRowProps {
   layovers?: string[];
   layoverDurations?: number[];
   duration: string;
+  depHour?: number;
+  arrHour?: number;
 }
 
-function LegRow({ airlineCode, date, from, to, stops, layovers, layoverDurations, duration }: LegRowProps) {
+function LegRow({ airlineCode, date, from, to, stops, layovers, layoverDurations, duration, depHour, arrHour }: LegRowProps) {
   return (
     <div className="flex items-center gap-3 py-2.5">
       <AirlineLogo code={airlineCode} size={32} />
@@ -46,6 +54,11 @@ function LegRow({ airlineCode, date, from, to, stops, layovers, layoverDurations
       {duration && (
         <div className="shrink-0 text-right">
           <div className="text-xs text-slate-400">{formatDuration(duration)}</div>
+          {depHour !== undefined && arrHour !== undefined && (
+            <div className="text-[10px] text-slate-400 tabular-nums">
+              {fmtHour(depHour)} → {fmtHour(arrHour)}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -102,6 +115,8 @@ export function FlightCard({ result, index, cabinClass = 'economy', travelers = 
           layovers={result.layovers}
           layoverDurations={result.layoverDurations}
           duration={result.duration}
+          depHour={result.departureHour}
+          arrHour={result.arrivalHour}
         />
         {!isOneWay && result.returnDate && (
           <LegRow
@@ -113,6 +128,8 @@ export function FlightCard({ result, index, cabinClass = 'economy', travelers = 
             layovers={result.layovers}
             layoverDurations={result.layoverDurations}
             duration={result.duration}
+            depHour={result.returnDepartureHour}
+            arrHour={result.returnArrivalHour}
           />
         )}
       </div>
