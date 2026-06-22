@@ -55,6 +55,13 @@ function buildFlightCard(result: SearchResult, isReturn = false): string {
   const dateStr = isReturn ? result.returnDate : result.departureDate;
   const label = isReturn ? 'Return' : 'Outbound';
 
+  // Outbound: origin → destination. Return: destination → origin.
+  const fromCode = isReturn ? result.destination : result.origin;
+  const toCode   = isReturn ? result.origin : result.destination;
+  const cityLine = isReturn
+    ? `${result.destinationCity || result.destinationName} → ${result.origin}`
+    : `${result.origin} → ${result.destinationCity || result.destinationName}`;
+
   const timeStr = depHour !== undefined && arrHour !== undefined
     ? `${fmtHour(depHour)} → ${fmtHour(arrHour)}`
     : '';
@@ -64,21 +71,24 @@ function buildFlightCard(result: SearchResult, isReturn = false): string {
       style="background:#f8fafc;border-radius:10px;margin-bottom:10px;overflow:hidden;">
       <tr>
         <td style="padding:14px 16px;">
-          <div style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">
+          <div style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">
             ${label}${dateStr ? ' · ' + fmtDate(dateStr) : ''}
           </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-            <div>
-              <div style="font-size:18px;font-weight:700;color:#0f172a;letter-spacing:-0.3px;">
-                ${result.origin} → ${isReturn ? result.origin : (result.destinationName || result.destination)}
-              </div>
-              ${timeStr ? `<div style="font-size:13px;color:#64748b;margin-top:3px;">${timeStr}</div>` : ''}
-            </div>
-            <div style="text-align:right;">
-              <div style="font-size:13px;color:#64748b;">${fmtDuration(result.duration)}</div>
-              <div style="font-size:12px;color:#94a3b8;margin-top:2px;">${stopsLabel(result.stops, result.layovers)}</div>
-            </div>
-          </div>
+          <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+              <td style="vertical-align:top;padding-right:24px;">
+                <div style="font-size:20px;font-weight:700;color:#0f172a;letter-spacing:-0.3px;">
+                  ${fromCode} → ${toCode}
+                </div>
+                <div style="font-size:12px;color:#94a3b8;margin-top:2px;">${cityLine}</div>
+                ${timeStr ? `<div style="font-size:13px;color:#64748b;margin-top:6px;">${timeStr}</div>` : ''}
+              </td>
+              <td style="vertical-align:top;text-align:right;white-space:nowrap;">
+                <div style="font-size:14px;font-weight:600;color:#0f172a;">${fmtDuration(result.duration)}</div>
+                <div style="font-size:12px;color:#94a3b8;margin-top:3px;">${stopsLabel(result.stops, result.layovers)}</div>
+              </td>
+            </tr>
+          </table>
         </td>
       </tr>
     </table>`;
@@ -91,9 +101,10 @@ function buildAlertEmailHtml(
   isDeal = false,
 ): string {
   const hasReturn = !!result.returnDate;
+  const pct = result.dealPercent !== null ? Math.round(result.dealPercent) : null;
   const dealBadge = result.dealRating !== 'unknown' ? `
     <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;color:#fff;background:${dealColor(result.dealRating)};margin-left:8px;">
-      ${dealLabel(result.dealRating)}${result.dealPercent ? ` −${result.dealPercent}%` : ''}
+      ${dealLabel(result.dealRating)}${pct ? ` −${pct}% vs avg` : ''}
     </span>` : '';
 
   const year = new Date().getFullYear();
@@ -147,12 +158,12 @@ function buildAlertEmailHtml(
               ${result.avg12m ? `
               <tr>
                 <td style="padding:5px 0;font-size:13px;color:#94a3b8;">12-month avg</td>
-                <td style="padding:5px 0;font-size:13px;font-weight:600;color:#0f172a;">$${result.avg12m.toLocaleString()}</td>
+                <td style="padding:5px 0;font-size:13px;font-weight:600;color:#0f172a;">$${Math.round(result.avg12m).toLocaleString()}</td>
               </tr>` : ''}
               ${result.historicalLow ? `
               <tr>
                 <td style="padding:5px 0;font-size:13px;color:#94a3b8;">Historical low</td>
-                <td style="padding:5px 0;font-size:13px;font-weight:600;color:#0f172a;">$${result.historicalLow.toLocaleString()}</td>
+                <td style="padding:5px 0;font-size:13px;font-weight:600;color:#0f172a;">$${Math.round(result.historicalLow).toLocaleString()}</td>
               </tr>` : ''}
               ${result.departureDate ? `
               <tr>
