@@ -83,7 +83,7 @@ export default function EditAlertPage() {
         throw new Error(data.error || 'Something went wrong');
       }
 
-      router.push('/account');
+      router.push('/account/alerts');
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
       setStatus('error');
@@ -195,7 +195,7 @@ export default function EditAlertPage() {
               )}
 
               <div className="flex items-center justify-between">
-                <Link href="/account" className="text-sm text-black/45 dark:text-white/45 hover:text-black dark:hover:text-white transition">
+                <Link href="/account/alerts" className="text-sm text-black/45 dark:text-white/45 hover:text-black dark:hover:text-white transition">
                   Cancel
                 </Link>
                 <motion.button
