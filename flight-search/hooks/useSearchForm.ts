@@ -54,6 +54,7 @@ export function useSearchForm() {
       originName: form.originName || form.origin,
       destination: form.destination,
       flexibility: form.flexibility,
+      tripType: form.tripType ?? 'roundtrip',
       tripDays: String(form.tripDays ?? 7),
       cabinClass: form.cabinClass ?? 'economy',
       travelers: String(form.travelers ?? 1),

@@ -15,9 +15,10 @@ interface Props {
   isLoading: boolean;
   cabinClass?: string;
   travelers?: number;
+  tripType?: 'roundtrip' | 'oneway';
 }
 
-export function ResultsGrid({ results, isLoading, cabinClass = 'economy', travelers = 1 }: Props) {
+export function ResultsGrid({ results, isLoading, cabinClass = 'economy', travelers = 1, tripType = 'roundtrip' }: Props) {
   const [sortBy, setSortBy] = useState<SortKey>('price');
   const [filterStops, setFilterStops] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -110,13 +111,13 @@ export function ResultsGrid({ results, isLoading, cabinClass = 'economy', travel
       {viewMode === 'tiles' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {displayResults.map((result, i) => (
-            <FlightCard key={result.id} result={result} index={i} cabinClass={cabinClass} travelers={travelers} />
+            <FlightCard key={result.id} result={result} index={i} cabinClass={cabinClass} travelers={travelers} tripType={tripType} />
           ))}
         </div>
       ) : (
         <div className="flex flex-col gap-2">
           {displayResults.map((result, i) => (
-            <FlightRow key={result.id} result={result} index={i} cabinClass={cabinClass} travelers={travelers} />
+            <FlightRow key={result.id} result={result} index={i} cabinClass={cabinClass} travelers={travelers} tripType={tripType} />
           ))}
         </div>
       )}

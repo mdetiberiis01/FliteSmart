@@ -15,6 +15,7 @@ interface Props {
   index: number;
   cabinClass?: string;
   travelers?: number;
+  tripType?: 'roundtrip' | 'oneway';
 }
 
 function formatLegDate(dateStr: string): string {
@@ -53,7 +54,8 @@ function LegRow({ airlineCode, date, from, to, stops, layovers, layoverDurations
 
 const GOOGLE_CABIN: Record<string, string> = { economy: 'e', premium_economy: 'p', business: 'b', first: 'f' };
 
-export function FlightCard({ result, index, cabinClass = 'economy', travelers = 1 }: Props) {
+export function FlightCard({ result, index, cabinClass = 'economy', travelers = 1, tripType = 'roundtrip' }: Props) {
+  const isOneWay = tripType === 'oneway';
   function handleClick() {
     const origin = result.origin || '';
     const dest = result.destination || '';
@@ -64,7 +66,7 @@ export function FlightCard({ result, index, cabinClass = 'economy', travelers = 
     // prefer it; fall back to the #search format for non-SerpAPI sources.
     const url = result.bookingUrl?.startsWith('https://www.google.com')
       ? result.bookingUrl
-      : `https://www.google.com/travel/flights#search;f=${origin};t=${dest};d=${dep}${result.returnDate ? `;r=${result.returnDate}` : ''};tt=${cabin};tc=${travelers}`;
+      : `https://www.google.com/travel/flights#search;f=${origin};t=${dest};d=${dep}${!isOneWay && result.returnDate ? `;r=${result.returnDate}` : ''};tt=${cabin};tc=${travelers}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   }
 
@@ -104,7 +106,7 @@ export function FlightCard({ result, index, cabinClass = 'economy', travelers = 
           layoverDurations={result.layoverDurations}
           duration={result.duration}
         />
-        {result.returnDate && (
+        {!isOneWay && result.returnDate && (
           <LegRow
             airlineCode={result.airlineCode}
             date={formatLegDate(result.returnDate)}

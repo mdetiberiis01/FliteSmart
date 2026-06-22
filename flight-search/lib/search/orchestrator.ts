@@ -441,7 +441,8 @@ function buildResult(
 // ---------------------------------------------------------------------------
 
 export async function orchestrateSearch(params: SearchParams, userIp?: string): Promise<SearchResult[]> {
-  const { origin, destination, flexibility, customDateStart, customDateEnd, tripDays = 7, cabinClass = 'economy', travelers = 1, maxBudget } = params;
+  const { origin, destination, flexibility, customDateStart, customDateEnd, tripDays = 7, cabinClass = 'economy', travelers = 1, maxBudget, tripType = 'roundtrip' } = params;
+  const isOneWay = tripType === 'oneway';
 
   const destinationCodes = await resolveDestination(destination);
   if (!destinationCodes.length) return [];
@@ -476,7 +477,7 @@ export async function orchestrateSearch(params: SearchParams, userIp?: string): 
     await Promise.all(
       targets.map(async (destCode) => {
         const searches = await Promise.all(
-          searchDates.map((dep) => searchFlightsWithFallback(origin, destCode, dep, addDays(dep, tripDays), userIp, cabinClass))
+          searchDates.map((dep) => searchFlightsWithFallback(origin, destCode, dep, isOneWay ? undefined : addDays(dep, tripDays), userIp, cabinClass))
         );
 
         const combinedPricePoints: PricePoint[] = [];
@@ -498,7 +499,7 @@ export async function orchestrateSearch(params: SearchParams, userIp?: string): 
     const destCode = destinationCodes[0];
 
     const searches = await Promise.all(
-      searchDates.map((dep) => searchFlightsWithFallback(origin, destCode, dep, addDays(dep, tripDays), userIp, cabinClass))
+      searchDates.map((dep) => searchFlightsWithFallback(origin, destCode, dep, isOneWay ? undefined : addDays(dep, tripDays), userIp, cabinClass))
     );
 
     for (const { flights, pricePoints, dataSource } of searches) {

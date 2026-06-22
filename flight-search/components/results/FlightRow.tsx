@@ -13,6 +13,7 @@ interface Props {
   index: number;
   cabinClass?: string;
   travelers?: number;
+  tripType?: 'roundtrip' | 'oneway';
 }
 
 function formatLegDate(dateStr: string): string {
@@ -26,7 +27,8 @@ function formatLegDate(dateStr: string): string {
 
 const GOOGLE_CABIN: Record<string, string> = { economy: 'e', premium_economy: 'p', business: 'b', first: 'f' };
 
-export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1 }: Props) {
+export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1, tripType = 'roundtrip' }: Props) {
+  const isOneWay = tripType === 'oneway';
   function handleClick() {
     const origin = result.origin || '';
     const dest = result.destination || '';
@@ -34,7 +36,7 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
     const cabin = GOOGLE_CABIN[cabinClass] ?? 'e';
     const url = result.bookingUrl?.startsWith('https://www.google.com')
       ? result.bookingUrl
-      : `https://www.google.com/travel/flights#search;f=${origin};t=${dest};d=${dep}${result.returnDate ? `;r=${result.returnDate}` : ''};tt=${cabin};tc=${travelers}`;
+      : `https://www.google.com/travel/flights#search;f=${origin};t=${dest};d=${dep}${!isOneWay && result.returnDate ? `;r=${result.returnDate}` : ''};tt=${cabin};tc=${travelers}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   }
 
@@ -87,7 +89,7 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
           </div>
 
           {/* Return leg (round-trip only) */}
-          {result.returnDate && (
+          {!isOneWay && result.returnDate && (
             <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2.5">
               <AirlineLogo code={result.airlineCode} size={24} />
               <div className="flex-1 min-w-0 flex flex-col gap-0.5">

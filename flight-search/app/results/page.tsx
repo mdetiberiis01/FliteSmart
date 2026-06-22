@@ -30,6 +30,7 @@ function ResultsContent() {
   const cabinClass = searchParams.get('cabinClass') || 'economy';
   const travelers = parseInt(searchParams.get('travelers') || '1', 10);
   const maxBudget = parseInt(searchParams.get('maxBudget') || '0', 10);
+  const tripType = (searchParams.get('tripType') || 'roundtrip') as 'roundtrip' | 'oneway';
 
   useEffect(() => {
     if (!origin || !destination) {
@@ -48,6 +49,7 @@ function ResultsContent() {
         originName,
         destination,
         flexibility,
+        tripType,
         tripDays,
         cabinClass,
         travelers,
@@ -154,7 +156,9 @@ function ResultsContent() {
                 {tripDays} day{tripDays !== 1 ? 's' : ''}
               </span>
               <span className="text-slate-300">·</span>
-              <span className="text-slate-500 text-sm">Prices per person roundtrip</span>
+              <span className="text-slate-500 text-sm">
+                {tripType === 'oneway' ? 'Prices per person one-way' : 'Prices per person roundtrip'}
+              </span>
             </div>
           </motion.div>
         )}
@@ -168,7 +172,7 @@ function ResultsContent() {
           </div>
         )}
 
-        <ResultsGrid results={results} isLoading={isLoading} cabinClass={cabinClass} travelers={travelers} />
+        <ResultsGrid results={results} isLoading={isLoading} cabinClass={cabinClass} travelers={travelers} tripType={tripType} />
 
         {/* Inline price alert prompt */}
         {!isLoading && !error && results.length > 0 && (
