@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     }
 
     const admin = getAdminClient();
-    const redirectTo = `${APP_URL}/login?confirmed=true`;
+    const redirectTo = `${APP_URL}/auth/confirm`;
 
     // generateLink creates the user (unconfirmed) and returns a one-time confirmation URL
     const { data, error } = await admin.auth.admin.generateLink({
