@@ -55,10 +55,6 @@ export async function POST(req: NextRequest) {
 
     const confirmUrl = data.properties.action_link;
 
-    const resendKey = process.env.RESEND_API_KEY ?? '';
-    console.log('[signup] RESEND key length:', resendKey.length, 'prefix:', resendKey.slice(0, 8));
-    console.log('[signup] FROM:', FROM_EMAIL);
-
     const emailRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
