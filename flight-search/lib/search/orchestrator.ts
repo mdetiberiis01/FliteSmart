@@ -503,7 +503,10 @@ export async function orchestrateSearch(params: SearchParams, userIp?: string): 
     );
 
     for (const { flights, pricePoints, dataSource } of searches) {
-      const best = flights[0];
+      // For domestic routes, skip results with 2+ stops — they're usually
+      // wildly indirect and confusing compared to nonstop/1-stop options.
+      const candidates = isDomestic ? flights.filter((f) => f.stops <= 1) : flights;
+      const best = candidates[0];
       if (!best) continue;
       allResults.push(buildResult(origin, destCode, best, pricePoints, dataSource));
       cachePriceData(origin, destCode, pricePoints, best.price);

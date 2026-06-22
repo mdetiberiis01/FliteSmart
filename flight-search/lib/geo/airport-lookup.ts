@@ -8,6 +8,7 @@ export const AIRPORT_INFO: Record<string, AirportInfo> = {
   JFK: { city: 'New York', country: 'United States' },
   LGA: { city: 'New York', country: 'United States' },
   EWR: { city: 'Newark', country: 'United States' },
+  HPN: { city: 'White Plains', country: 'United States' },
   LAX: { city: 'Los Angeles', country: 'United States' },
   SFO: { city: 'San Francisco', country: 'United States' },
   ORD: { city: 'Chicago', country: 'United States' },
@@ -298,7 +299,7 @@ export function getAirportInfo(iataCode: string): AirportInfo {
 // [lat, lng] for map rendering
 export const AIRPORT_COORDS: Record<string, [number, number]> = {
   // United States
-  JFK: [40.64, -73.78], LGA: [40.78, -73.87], EWR: [40.69, -74.17],
+  JFK: [40.64, -73.78], LGA: [40.78, -73.87], EWR: [40.69, -74.17], HPN: [41.07, -73.71],
   LAX: [33.94, -118.41], SFO: [37.62, -122.38], ORD: [41.98, -87.90],
   MDW: [41.79, -87.75], MIA: [25.80, -80.28], ATL: [33.64, -84.43],
   BOS: [42.36, -71.01], SEA: [47.45, -122.31], DFW: [32.90, -97.04],
