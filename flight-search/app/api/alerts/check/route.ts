@@ -47,8 +47,7 @@ async function runChecks() {
           alert.email,
           alert.origin_name || alert.origin,
           best.destinationName || alert.destination,
-          best.price,
-          best.bookingUrl || 'https://flitesmart.com',
+          best,
         );
         alerted = true;
       } else if (
@@ -60,9 +59,7 @@ async function runChecks() {
           alert.email,
           alert.origin_name || alert.origin,
           best.destinationName || alert.destination,
-          best.price,
-          best.dealPercent,
-          best.bookingUrl || 'https://flitesmart.com',
+          best,
         );
         alerted = true;
       }

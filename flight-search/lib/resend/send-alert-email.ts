@@ -1,9 +1,194 @@
 import { Resend } from 'resend';
+import type { SearchResult } from '@/types/search';
 
 function getResend() {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) throw new Error('RESEND_API_KEY is not set');
   return new Resend(apiKey);
+}
+
+const FROM = 'FliteSmart <alerts@flitesmart.com>';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.flitesmart.com';
+
+function fmtHour(h: number): string {
+  if (h === 0) return '12:00 AM';
+  if (h < 12) return `${h}:00 AM`;
+  if (h === 12) return '12:00 PM';
+  return `${h - 12}:00 PM`;
+}
+
+function fmtDuration(iso: string): string {
+  const h = parseInt(iso.match(/(\d+)H/)?.[1] ?? '0');
+  const m = parseInt(iso.match(/(\d+)M/)?.[1] ?? '0');
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
+function fmtDate(dateStr: string): string {
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function dealColor(rating: string): string {
+  if (rating === 'great') return '#16a34a';
+  if (rating === 'good') return '#2563eb';
+  if (rating === 'fair') return '#d97706';
+  return '#dc2626';
+}
+
+function dealLabel(rating: string): string {
+  if (rating === 'great') return 'Great Deal';
+  if (rating === 'good') return 'Good Deal';
+  if (rating === 'fair') return 'Fair Price';
+  if (rating === 'above-average') return 'Above Average';
+  return '';
+}
+
+function stopsLabel(stops: number, layovers?: string[]): string {
+  if (stops === 0) return 'Nonstop';
+  if (stops === 1) return `1 stop${layovers?.[0] ? ` · ${layovers[0]}` : ''}`;
+  return `${stops} stops${layovers?.length ? ` · ${layovers.join(', ')}` : ''}`;
+}
+
+function buildFlightCard(result: SearchResult, isReturn = false): string {
+  const depHour = isReturn ? result.returnDepartureHour : result.departureHour;
+  const arrHour = isReturn ? result.returnArrivalHour : result.arrivalHour;
+  const dateStr = isReturn ? result.returnDate : result.departureDate;
+  const label = isReturn ? 'Return' : 'Outbound';
+
+  const timeStr = depHour !== undefined && arrHour !== undefined
+    ? `${fmtHour(depHour)} → ${fmtHour(arrHour)}`
+    : '';
+
+  return `
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%"
+      style="background:#f8fafc;border-radius:10px;margin-bottom:10px;overflow:hidden;">
+      <tr>
+        <td style="padding:14px 16px;">
+          <div style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">
+            ${label}${dateStr ? ' · ' + fmtDate(dateStr) : ''}
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div style="font-size:18px;font-weight:700;color:#0f172a;letter-spacing:-0.3px;">
+                ${result.origin} → ${isReturn ? result.origin : (result.destinationName || result.destination)}
+              </div>
+              ${timeStr ? `<div style="font-size:13px;color:#64748b;margin-top:3px;">${timeStr}</div>` : ''}
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:13px;color:#64748b;">${fmtDuration(result.duration)}</div>
+              <div style="font-size:12px;color:#94a3b8;margin-top:2px;">${stopsLabel(result.stops, result.layovers)}</div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </table>`;
+}
+
+function buildAlertEmailHtml(
+  result: SearchResult,
+  alertOriginName: string,
+  alertDestination: string,
+  isDeal = false,
+): string {
+  const hasReturn = !!result.returnDate;
+  const dealBadge = result.dealRating !== 'unknown' ? `
+    <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;color:#fff;background:${dealColor(result.dealRating)};margin-left:8px;">
+      ${dealLabel(result.dealRating)}${result.dealPercent ? ` −${result.dealPercent}%` : ''}
+    </span>` : '';
+
+  const year = new Date().getFullYear();
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#f1f5f9;padding:32px 16px;">
+    <tr><td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:520px;">
+
+        <!-- Logo -->
+        <tr><td align="center" style="padding-bottom:20px;">
+          <span style="font-size:18px;font-weight:700;color:#0f172a;letter-spacing:-0.5px;">&#9992; FliteSmart</span>
+        </td></tr>
+
+        <!-- Card -->
+        <tr><td style="background:#ffffff;border-radius:16px;border:1px solid #e2e8f0;overflow:hidden;">
+
+          <!-- Header bar -->
+          <div style="background:${isDeal ? '#0077b6' : '#0f172a'};padding:18px 24px;">
+            <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.7);margin-bottom:4px;">
+              ${isDeal ? '⚡ Flash Deal Alert' : '🔔 Price Alert'}
+            </div>
+            <div style="font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">
+              ${alertOriginName} → <span style="text-transform:capitalize;">${alertDestination}</span>
+            </div>
+          </div>
+
+          <!-- Body -->
+          <div style="padding:24px;">
+
+            <!-- Price row -->
+            <div style="display:flex;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
+              <span style="font-size:36px;font-weight:800;color:#0f172a;letter-spacing:-1px;">$${result.price.toLocaleString()}</span>
+              <span style="font-size:13px;color:#94a3b8;">per person · ${hasReturn ? 'roundtrip' : 'one-way'}</span>
+              ${dealBadge}
+            </div>
+
+            <!-- Flight legs -->
+            ${buildFlightCard(result, false)}
+            ${hasReturn ? buildFlightCard(result, true) : ''}
+
+            <!-- Details table -->
+            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:16px 0 20px;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;padding:12px 0;">
+              <tr>
+                <td style="padding:5px 0;font-size:13px;color:#94a3b8;width:50%;">Airline</td>
+                <td style="padding:5px 0;font-size:13px;font-weight:600;color:#0f172a;">${result.airline}</td>
+              </tr>
+              ${result.avg12m ? `
+              <tr>
+                <td style="padding:5px 0;font-size:13px;color:#94a3b8;">12-month avg</td>
+                <td style="padding:5px 0;font-size:13px;font-weight:600;color:#0f172a;">$${result.avg12m.toLocaleString()}</td>
+              </tr>` : ''}
+              ${result.historicalLow ? `
+              <tr>
+                <td style="padding:5px 0;font-size:13px;color:#94a3b8;">Historical low</td>
+                <td style="padding:5px 0;font-size:13px;font-weight:600;color:#0f172a;">$${result.historicalLow.toLocaleString()}</td>
+              </tr>` : ''}
+              ${result.departureDate ? `
+              <tr>
+                <td style="padding:5px 0;font-size:13px;color:#94a3b8;">Departure</td>
+                <td style="padding:5px 0;font-size:13px;font-weight:600;color:#0f172a;">${fmtDate(result.departureDate)}</td>
+              </tr>` : ''}
+              ${result.returnDate ? `
+              <tr>
+                <td style="padding:5px 0;font-size:13px;color:#94a3b8;">Return</td>
+                <td style="padding:5px 0;font-size:13px;font-weight:600;color:#0f172a;">${fmtDate(result.returnDate)}</td>
+              </tr>` : ''}
+            </table>
+
+            <!-- CTA -->
+            <a href="${result.bookingUrl || 'https://www.google.com/flights'}"
+               style="display:block;text-align:center;background:#0077b6;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:14px 24px;border-radius:12px;margin-bottom:12px;">
+              Book on Google Flights →
+            </a>
+            <a href="${APP_URL}/account/alerts"
+               style="display:block;text-align:center;color:#94a3b8;text-decoration:none;font-size:12px;padding:4px;">
+              Manage your alerts
+            </a>
+
+          </div>
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td align="center" style="padding-top:20px;">
+          <p style="font-size:11px;color:#94a3b8;margin:0;">© ${year} FliteSmart · Not affiliated with any airline · Prices may vary</p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
 }
 
 export async function sendConfirmationEmail(to: string, confirmationUrl: string) {
@@ -12,7 +197,6 @@ export async function sendConfirmationEmail(to: string, confirmationUrl: string)
     from: 'FliteSmart <noreply@flitesmart.com>',
     to,
     subject: 'Confirm Your Email - FliteSmart',
-    text: `Thanks for signing up for FliteSmart.\n\nTo finish creating your account, please confirm your email address by visiting the link below:\n\n${confirmationUrl}\n\nOnce your email is verified, you will be able to start searching for the best times to fly and uncover the cheapest date ranges for the destinations you want to visit.\n\nFliteSmart is designed for flexible travelers. Just choose where you are leaving from and the region or city you want to explore, and we will help you find the lowest prices across the best travel dates.\n\nIf you did not create a FliteSmart account, you can safely ignore this email.\n\nSee you in the skies,\nThe FliteSmart Team`,
     html: `
       <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; color: #111; padding: 32px 24px;">
         <div style="margin-bottom: 32px;">
@@ -25,19 +209,9 @@ export async function sendConfirmationEmail(to: string, confirmationUrl: string)
         <a href="${confirmationUrl}" style="display: inline-block; padding: 14px 28px; background: #111; color: #fff; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 15px; margin-bottom: 32px;">
           Confirm my email
         </a>
-        <p style="color: #555; font-size: 14px; line-height: 1.6; margin: 0 0 16px;">
-          Once your email is verified, you will be able to start searching for the best times to fly and uncover the cheapest date ranges for the destinations you want to visit.
-        </p>
-        <p style="color: #555; font-size: 14px; line-height: 1.6; margin: 0 0 32px;">
-          FliteSmart is designed for flexible travelers. Just choose where you are leaving from and the region or city you want to explore, and we will help you find the lowest prices across the best travel dates.
-        </p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 0 0 24px;" />
-        <p style="color: #999; font-size: 13px; line-height: 1.5; margin: 0 0 16px;">
+        <p style="color: #999; font-size: 13px; line-height: 1.5; margin: 0;">
           If you did not create a FliteSmart account, you can safely ignore this email.
-        </p>
-        <p style="color: #555; font-size: 14px; margin: 0;">
-          See you in the skies,<br />
-          <strong>The FliteSmart Team</strong>
         </p>
       </div>
     `,
@@ -46,73 +220,30 @@ export async function sendConfirmationEmail(to: string, confirmationUrl: string)
 
 export async function sendPriceAlertEmail(
   to: string,
-  origin: string,
+  originName: string,
   destination: string,
-  price: number,
-  bookingUrl: string,
+  result: SearchResult,
 ) {
   const resend = getResend();
   await resend.emails.send({
-    from: 'FliteSmart <alerts@flitesmart.com>',
+    from: FROM,
     to,
-    subject: `Price drop: ${origin} → ${destination} now $${price}`,
-    text: `A price alert for your route!\n\nRoute: ${origin} → ${destination}\nCurrent price: $${price}\n\nBook now: ${bookingUrl}\n\n— FliteSmart`,
-    html: `
-      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; color: #111;">
-        <h2 style="margin-bottom: 4px;">Price drop alert</h2>
-        <p style="color: #555; margin-top: 0;">A price on your watched route just dropped below your target.</p>
-        <table style="width:100%; border-collapse: collapse; margin: 24px 0; background: #f9f9f9; border-radius: 8px; overflow: hidden;">
-          <tr>
-            <td style="padding: 12px 16px; color: #555; font-size: 14px;">Route</td>
-            <td style="padding: 12px 16px; font-weight: 600;">${origin} → ${destination}</td>
-          </tr>
-          <tr style="border-top: 1px solid #eee;">
-            <td style="padding: 12px 16px; color: #555; font-size: 14px;">Current price</td>
-            <td style="padding: 12px 16px; font-weight: 600; color: #16a34a;">$${price}</td>
-          </tr>
-        </table>
-        <a href="${bookingUrl}" style="display: inline-block; padding: 12px 24px; background: #111; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600;">Book this flight</a>
-        <p style="font-size: 12px; color: #999; margin-top: 32px;">— FliteSmart</p>
-      </div>
-    `,
+    subject: `Price alert: ${originName} → ${destination} now $${result.price.toLocaleString()}`,
+    html: buildAlertEmailHtml(result, originName, destination, false),
   });
 }
 
 export async function sendDealAlertEmail(
   to: string,
-  origin: string,
+  originName: string,
   destination: string,
-  price: number,
-  pctBelowAvg: number,
-  bookingUrl: string,
+  result: SearchResult,
 ) {
   const resend = getResend();
   await resend.emails.send({
-    from: 'FliteSmart <alerts@flitesmart.com>',
+    from: FROM,
     to,
-    subject: `Flash deal: ${origin} → ${destination} — ${pctBelowAvg}% below average`,
-    text: `Unusually cheap deal detected!\n\nRoute: ${origin} → ${destination}\nPrice: $${price} (${pctBelowAvg}% below 12-month average)\n\nBook now: ${bookingUrl}\n\n— FliteSmart`,
-    html: `
-      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; color: #111;">
-        <h2 style="margin-bottom: 4px;">Flash deal detected ⚡</h2>
-        <p style="color: #555; margin-top: 0;">This price is ${pctBelowAvg}% below the 12-month average — unusually cheap.</p>
-        <table style="width:100%; border-collapse: collapse; margin: 24px 0; background: #f9f9f9; border-radius: 8px; overflow: hidden;">
-          <tr>
-            <td style="padding: 12px 16px; color: #555; font-size: 14px;">Route</td>
-            <td style="padding: 12px 16px; font-weight: 600;">${origin} → ${destination}</td>
-          </tr>
-          <tr style="border-top: 1px solid #eee;">
-            <td style="padding: 12px 16px; color: #555; font-size: 14px;">Price</td>
-            <td style="padding: 12px 16px; font-weight: 600; color: #16a34a;">$${price}</td>
-          </tr>
-          <tr style="border-top: 1px solid #eee;">
-            <td style="padding: 12px 16px; color: #555; font-size: 14px;">vs. 12-month avg</td>
-            <td style="padding: 12px 16px; font-weight: 600; color: #16a34a;">−${pctBelowAvg}%</td>
-          </tr>
-        </table>
-        <a href="${bookingUrl}" style="display: inline-block; padding: 12px 24px; background: #111; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600;">Book this flight</a>
-        <p style="font-size: 12px; color: #999; margin-top: 32px;">— FliteSmart</p>
-      </div>
-    `,
+    subject: `⚡ Flash deal: ${originName} → ${destination} — ${result.dealPercent}% below average`,
+    html: buildAlertEmailHtml(result, originName, destination, true),
   });
 }
