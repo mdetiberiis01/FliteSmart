@@ -64,7 +64,7 @@ export function FlightCard({ result, index, cabinClass = 'economy', travelers = 
     // Always build the URL with cabin class so first/business/etc. is pre-selected.
     // SerpAPI's google_flights_url includes cabin when travel_class is passed, so
     // prefer it; fall back to the #search format for non-SerpAPI sources.
-    const url = result.bookingUrl?.startsWith('https://www.google.com')
+    const url = !isOneWay && result.bookingUrl?.startsWith('https://www.google.com')
       ? result.bookingUrl
       : `https://www.google.com/travel/flights#search;f=${origin};t=${dest};d=${dep}${!isOneWay && result.returnDate ? `;r=${result.returnDate}` : ''};tt=${cabin};tc=${travelers}`;
     window.open(url, '_blank', 'noopener,noreferrer');
