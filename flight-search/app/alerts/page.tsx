@@ -13,7 +13,7 @@ import { useAuth } from '@/lib/auth-context';
 import { signIn } from '@/lib/supabase/auth';
 import type { SearchParams } from '@/types/search';
 
-type Step = 'form' | 'auth' | 'success';
+type Step = 'form' | 'auth' | 'pending' | 'success';
 type AuthMode = 'signin' | 'signup';
 type Flexibility = SearchParams['flexibility'];
 type Status = 'idle' | 'submitting' | 'error';
@@ -123,9 +123,9 @@ export default function AlertsPage() {
         const data = await signupRes.json().catch(() => ({}));
         throw new Error(data.error || 'Could not create account');
       }
-      const { userId } = await signupRes.json();
+      const { userId, pendingConfirmation } = await signupRes.json();
       await saveAlert(userId, email);
-      setStep('success');
+      setStep(pendingConfirmation ? 'pending' : 'success');
     } catch (err) {
       setAuthError(err instanceof Error ? err.message : 'Something went wrong');
       setAuthStatus('error');
@@ -370,7 +370,36 @@ export default function AlertsPage() {
               </motion.div>
             )}
 
-            {/* ── Step 3: Success ───────────────────────────────────────── */}
+            {/* ── Step 3: Pending email confirmation ───────────────────── */}
+            {step === 'pending' && (
+              <motion.div
+                key="pending"
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white border border-slate-200 rounded-2xl shadow-sm p-10 text-center"
+              >
+                <div className="w-14 h-14 rounded-full bg-brand/10 flex items-center justify-center mx-auto mb-5">
+                  <Mail className="w-7 h-7 text-brand" strokeWidth={1.75} />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 mb-2">Check your inbox</h2>
+                <p className="text-slate-500 text-sm mb-1">
+                  We sent a confirmation link to{' '}
+                  <span className="font-medium text-slate-700">{email}</span>.
+                </p>
+                <p className="text-slate-400 text-xs mt-1 mb-6">
+                  Click the link in the email to confirm your account — your alert is already saved and will activate once you do.
+                </p>
+                <a
+                  href="/login"
+                  className="inline-block px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:border-slate-300 transition"
+                >
+                  Go to sign in
+                </a>
+              </motion.div>
+            )}
+
+            {/* ── Step 4: Success ───────────────────────────────────────── */}
             {step === 'success' && (
               <motion.div
                 key="success"
