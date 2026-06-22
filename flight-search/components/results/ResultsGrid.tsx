@@ -5,10 +5,14 @@ import { motion } from 'framer-motion';
 import { SearchResult } from '@/types/search';
 import { FlightCard } from './FlightCard';
 import { FlightRow } from './FlightRow';
-import { SortFilterBar, ViewMode } from './SortFilterBar';
+import { SortFilterBar, SortKey, SortDir, ViewMode } from './SortFilterBar';
 import { FlightCardSkeleton, FlightRowSkeleton } from './FlightCardSkeleton';
 
-type SortKey = 'price' | 'date' | 'deal';
+function parseDurationMinutes(iso: string): number {
+  const h = parseInt(iso.match(/(\d+)H/)?.[1] ?? '0');
+  const m = parseInt(iso.match(/(\d+)M/)?.[1] ?? '0');
+  return h * 60 + m;
+}
 
 interface Props {
   results: SearchResult[];
@@ -20,6 +24,7 @@ interface Props {
 
 export function ResultsGrid({ results, isLoading, cabinClass = 'economy', travelers = 1, tripType = 'roundtrip' }: Props) {
   const [sortBy, setSortBy] = useState<SortKey>('price');
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [filterStops, setFilterStops] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
 
@@ -29,16 +34,19 @@ export function ResultsGrid({ results, isLoading, cabinClass = 'economy', travel
       filtered = filtered.filter((r) => r.stops === filterStops);
     }
 
+    const dir = sortDir === 'asc' ? 1 : -1;
     return [...filtered].sort((a, b) => {
-      if (sortBy === 'price') return a.price - b.price;
-      if (sortBy === 'date') return a.departureDate.localeCompare(b.departureDate);
+      if (sortBy === 'price') return (a.price - b.price) * dir;
+      if (sortBy === 'date') return a.departureDate.localeCompare(b.departureDate) * dir;
+      if (sortBy === 'duration') return (parseDurationMinutes(a.duration) - parseDurationMinutes(b.duration)) * dir;
+      if (sortBy === 'stops') return (a.stops - b.stops) * dir;
       if (sortBy === 'deal') {
-        const ratingOrder = { great: 0, good: 1, fair: 2, 'above-average': 3, unknown: 4 };
-        return ratingOrder[a.dealRating] - ratingOrder[b.dealRating];
+        const ratingOrder: Record<string, number> = { great: 0, good: 1, fair: 2, 'above-average': 3, unknown: 4 };
+        return (ratingOrder[a.dealRating] ?? 4) - (ratingOrder[b.dealRating] ?? 4);
       }
       return 0;
     });
-  }, [results, sortBy, filterStops]);
+  }, [results, sortBy, sortDir, filterStops]);
 
   if (isLoading) {
     return (
@@ -98,7 +106,8 @@ export function ResultsGrid({ results, isLoading, cabinClass = 'economy', travel
       <SortFilterBar
         results={results}
         sortBy={sortBy}
-        onSortChange={setSortBy}
+        sortDir={sortDir}
+        onSortChange={(key, dir) => { setSortBy(key); setSortDir(dir); }}
         filterStops={filterStops}
         onFilterStopsChange={setFilterStops}
         viewMode={viewMode}

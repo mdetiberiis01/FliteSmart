@@ -2,51 +2,74 @@
 
 import { SearchResult } from '@/types/search';
 
-type SortKey = 'price' | 'date' | 'deal';
+export type SortKey = 'price' | 'date' | 'duration' | 'stops' | 'deal';
+export type SortDir = 'asc' | 'desc';
 export type ViewMode = 'tiles' | 'list';
 
 interface Props {
   results: SearchResult[];
   sortBy: SortKey;
-  onSortChange: (key: SortKey) => void;
+  sortDir: SortDir;
+  onSortChange: (key: SortKey, dir: SortDir) => void;
   filterStops: number | null;
   onFilterStopsChange: (stops: number | null) => void;
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
 }
 
+const SORT_OPTIONS: { key: SortKey; labelAsc: string; labelDesc: string; bidirectional: boolean }[] = [
+  { key: 'price',    labelAsc: 'Price ↑',   labelDesc: 'Price ↓',  bidirectional: true },
+  { key: 'date',     labelAsc: 'Date ↑',    labelDesc: 'Date ↓',   bidirectional: true },
+  { key: 'duration', labelAsc: 'Shortest',  labelDesc: 'Longest',  bidirectional: false },
+  { key: 'stops',    labelAsc: 'Fewest stops', labelDesc: 'Fewest stops', bidirectional: false },
+  { key: 'deal',     labelAsc: 'Best deal', labelDesc: 'Best deal', bidirectional: false },
+];
+
 export function SortFilterBar({
   sortBy,
+  sortDir,
   onSortChange,
   filterStops,
   onFilterStopsChange,
   viewMode,
   onViewModeChange,
 }: Props) {
+  function handleSortClick(key: SortKey, bidirectional: boolean) {
+    if (sortBy === key && bidirectional) {
+      onSortChange(key, sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      onSortChange(key, 'asc');
+    }
+  }
+
   return (
-    <div className="flex flex-wrap items-center gap-2 mb-6">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-6">
       {/* Sort */}
-      <div className="flex items-center gap-1.5 text-sm">
-        <span className="text-slate-400 text-xs">Sort:</span>
-        {(['price', 'date', 'deal'] as SortKey[]).map((key) => (
-          <button
-            key={key}
-            onClick={() => onSortChange(key)}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
-              sortBy === key
-                ? 'bg-brand text-white'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
-            }`}
-          >
-            {key === 'price' ? 'Cheapest' : key === 'date' ? 'Soonest' : 'Best deal'}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="text-slate-400 text-xs shrink-0">Sort:</span>
+        {SORT_OPTIONS.map(({ key, labelAsc, labelDesc, bidirectional }) => {
+          const isActive = sortBy === key;
+          const label = isActive && bidirectional && sortDir === 'desc' ? labelDesc : labelAsc;
+          return (
+            <button
+              key={key}
+              onClick={() => handleSortClick(key, bidirectional)}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
+                isActive
+                  ? 'bg-brand text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+              }`}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Stops filter */}
-      <div className="flex items-center gap-1.5 text-sm">
-        <span className="text-slate-400 text-xs">Stops:</span>
-        {([null, 0, 1] as (number | null)[]).map((stops) => (
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="text-slate-400 text-xs shrink-0">Stops:</span>
+        {([null, 0, 1, 2] as (number | null)[]).map((stops) => (
           <button
             key={String(stops)}
             onClick={() => onFilterStopsChange(stops)}
@@ -56,21 +79,19 @@ export function SortFilterBar({
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
-            {stops === null ? 'Any' : stops === 0 ? 'Nonstop' : '1 stop'}
+            {stops === null ? 'Any' : stops === 0 ? 'Nonstop' : stops === 1 ? '1 stop' : '2+'}
           </button>
         ))}
       </div>
 
       {/* View mode toggle */}
-      <div className="ml-auto flex items-center gap-1.5 text-sm">
-        <span className="text-slate-400">View:</span>
+      <div className="ml-auto flex items-center gap-1.5">
+        <span className="text-slate-400 text-xs">View:</span>
         <button
           onClick={() => onViewModeChange('tiles')}
           aria-label="Tile view"
           className={`p-1.5 rounded-lg transition-all ${
-            viewMode === 'tiles'
-              ? 'bg-brand text-white'
-              : 'text-slate-400 hover:text-brand hover:bg-brand-50'
+            viewMode === 'tiles' ? 'bg-brand text-white' : 'text-slate-400 hover:text-brand hover:bg-brand-50'
           }`}
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -84,9 +105,7 @@ export function SortFilterBar({
           onClick={() => onViewModeChange('list')}
           aria-label="List view"
           className={`p-1.5 rounded-lg transition-all ${
-            viewMode === 'list'
-              ? 'bg-brand text-white'
-              : 'text-slate-400 hover:text-brand hover:bg-brand-50'
+            viewMode === 'list' ? 'bg-brand text-white' : 'text-slate-400 hover:text-brand hover:bg-brand-50'
           }`}
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">

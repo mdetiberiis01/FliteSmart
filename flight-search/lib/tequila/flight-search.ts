@@ -43,7 +43,6 @@ export async function searchFlightsTequila(
     url.searchParams.set('curr', 'USD');
     url.searchParams.set('limit', '5');
     url.searchParams.set('sort', 'price');
-    url.searchParams.set('max_stopovers', '1');
 
     const response = await fetch(url.toString(), {
       headers: { apikey: TEQUILA_API_KEY },
