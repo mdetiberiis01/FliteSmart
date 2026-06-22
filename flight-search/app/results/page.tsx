@@ -82,28 +82,70 @@ function ResultsContent() {
     }[flexibility] || flexibility;
 
   return (
-    <main className="min-h-screen bg-white">
-      {/* Top bar */}
-      <div className="border-b border-slate-200 bg-white sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
+    <main className="min-h-screen bg-slate-50">
+      {/* Branded sticky header */}
+      <div className="border-b border-slate-200 bg-white sticky top-0 z-30 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center gap-3">
+
+          {/* Logo — links home */}
           <button
             onClick={() => router.push('/')}
-            className="text-slate-500 hover:text-slate-900 transition text-sm flex items-center gap-1 shrink-0"
+            className="flex items-center gap-1.5 font-bold text-slate-900 tracking-tight shrink-0 hover:opacity-80 transition cursor-pointer"
           >
-            ← Back
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand" aria-hidden="true">
+              <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 2c-2-2-4-2-5.5-.5L10 5 1.8 6.2c-.5.1-.9.5-.7 1l2.3 4c.3.5.9.7 1.5.5L9 10.5 11 13l-2 3.5c-.3.5-.1 1.1.4 1.4l4 2.3c.5.2 1 0 1-.5z" />
+            </svg>
+            <span className="hidden sm:inline">FliteSmart</span>
           </button>
-          <div className="flex-1 text-center min-w-0">
-            <div className="truncate">
-              <span className="text-slate-900 font-semibold text-sm">
-                {originName} → {destination}
-              </span>
-              <span className="text-slate-400 text-xs ml-2 hidden sm:inline">{flexLabel}</span>
-            </div>
+
+          {/* Divider */}
+          <div className="hidden sm:block w-px h-5 bg-slate-200 shrink-0" />
+
+          {/* Route + context chips */}
+          <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+            <span className="text-slate-900 font-semibold text-sm whitespace-nowrap">
+              {originName}
+            </span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand shrink-0" aria-hidden="true">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+            <span className="text-slate-900 font-semibold text-sm whitespace-nowrap capitalize">
+              {destination}
+            </span>
+            <span className="hidden sm:flex items-center gap-1.5 ml-1">
+              <span className="text-slate-300">·</span>
+              <span className="text-xs text-slate-500 whitespace-nowrap">{flexLabel}</span>
+              {tripType !== 'oneway' && (
+                <>
+                  <span className="text-slate-300">·</span>
+                  <span className="text-xs text-slate-500 whitespace-nowrap">{tripDays}d {tripType}</span>
+                </>
+              )}
+              {tripType === 'oneway' && (
+                <>
+                  <span className="text-slate-300">·</span>
+                  <span className="text-xs text-slate-500 whitespace-nowrap">one-way</span>
+                </>
+              )}
+            </span>
+          </div>
+
+          {/* Right actions */}
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setShowMap(!showMap)}
-              className="text-slate-400 hover:text-brand transition text-xs mt-0.5"
+              className="hidden sm:flex items-center gap-1 text-xs text-slate-400 hover:text-brand transition px-2 py-1 rounded-lg hover:bg-slate-50"
             >
-              {showMap ? 'Hide map' : 'Show map'}
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+              </svg>
+              {showMap ? 'Hide map' : 'Map'}
+            </button>
+            <button
+              onClick={() => router.push('/')}
+              className="px-3 py-1.5 rounded-full bg-brand text-white text-xs font-semibold hover:bg-brand-dark transition whitespace-nowrap"
+            >
+              New search
             </button>
           </div>
         </div>
@@ -142,27 +184,30 @@ function ResultsContent() {
             animate={{ opacity: 1 }}
             className="mb-6"
           >
-            <h2 className="text-slate-900 text-2xl font-bold">
-              {results.length > 0
-                ? `${results.length} flight${results.length !== 1 ? 's' : ''} found`
-                : 'Searching...'}
-            </h2>
-            <div className="flex flex-wrap items-center gap-2 mt-2">
-              <span className="text-slate-500 text-sm">From {originName}</span>
-              <span className="text-slate-300">·</span>
-              <span className="text-slate-500 text-sm">{flexLabel}</span>
-              {tripType !== 'oneway' && (
-                <>
-                  <span className="text-slate-300">·</span>
-                  <span className="bg-slate-100 border border-slate-200 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-full">
-                    {tripDays} day{tripDays !== 1 ? 's' : ''}
-                  </span>
-                </>
+            <div className="flex items-baseline gap-3 flex-wrap">
+              <h2 className="text-slate-900 text-2xl font-bold">
+                {results.length > 0
+                  ? `${results.length} flight${results.length !== 1 ? 's' : ''} found`
+                  : 'Searching...'}
+              </h2>
+              {results.length > 0 && (
+                <span className="text-slate-400 text-sm">
+                  {tripType === 'oneway' ? 'per person · one-way' : 'per person · roundtrip'}
+                </span>
               )}
-              <span className="text-slate-300">·</span>
-              <span className="text-slate-500 text-sm">
-                {tripType === 'oneway' ? 'Prices per person one-way' : 'Prices per person roundtrip'}
+            </div>
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              <span className="bg-white border border-slate-200 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
+                {originName} → {destination}
               </span>
+              <span className="bg-white border border-slate-200 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
+                {flexLabel}
+              </span>
+              {tripType !== 'oneway' && (
+                <span className="bg-white border border-slate-200 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
+                  {tripDays} day{tripDays !== 1 ? 's' : ''}
+                </span>
+              )}
             </div>
           </motion.div>
         )}
