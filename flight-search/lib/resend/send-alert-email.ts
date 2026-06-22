@@ -49,46 +49,59 @@ function stopsLabel(stops: number, layovers?: string[]): string {
   return `${stops} stops${layovers?.length ? ` · ${layovers.join(', ')}` : ''}`;
 }
 
-function buildFlightCard(result: SearchResult, isReturn = false): string {
+function buildFlightCard(result: SearchResult, originName: string, isReturn = false): string {
   const depHour = isReturn ? result.returnDepartureHour : result.departureHour;
   const arrHour = isReturn ? result.returnArrivalHour : result.arrivalHour;
   const dateStr = isReturn ? result.returnDate : result.departureDate;
-  const label = isReturn ? 'Return' : 'Outbound';
+  const label   = isReturn ? 'Return' : 'Outbound';
 
-  // Outbound: origin → destination. Return: destination → origin.
+  const destCity = result.destinationCity || result.destinationName || result.destination;
+
+  // Airport codes: outbound = origin→dest, return = dest→origin
   const fromCode = isReturn ? result.destination : result.origin;
-  const toCode   = isReturn ? result.origin : result.destination;
-  const cityLine = isReturn
-    ? `${result.destinationCity || result.destinationName} → ${result.origin}`
-    : `${result.origin} → ${result.destinationCity || result.destinationName}`;
+  const toCode   = isReturn ? result.origin       : result.destination;
+  // City names follow the same direction
+  const fromCity = isReturn ? destCity    : originName;
+  const toCity   = isReturn ? originName  : destCity;
 
   const timeStr = depHour !== undefined && arrHour !== undefined
-    ? `${fmtHour(depHour)} → ${fmtHour(arrHour)}`
+    ? `${fmtHour(depHour)} &rarr; ${fmtHour(arrHour)}`
     : '';
 
   return `
     <table role="presentation" cellpadding="0" cellspacing="0" width="100%"
-      style="background:#f8fafc;border-radius:10px;margin-bottom:10px;overflow:hidden;">
+      style="background:#f8fafc;border-radius:10px;margin-bottom:10px;">
       <tr>
-        <td style="padding:14px 16px;">
-          <div style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">
-            ${label}${dateStr ? ' · ' + fmtDate(dateStr) : ''}
-          </div>
+        <td style="padding:14px 16px 12px 16px;">
+
+          <!-- Label row -->
+          <p style="margin:0 0 8px 0;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">
+            ${label}${dateStr ? ' &middot; ' + fmtDate(dateStr) : ''}
+          </p>
+
+          <!-- Route + duration row -->
           <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
             <tr>
-              <td style="vertical-align:top;padding-right:24px;">
-                <div style="font-size:20px;font-weight:700;color:#0f172a;letter-spacing:-0.3px;">
-                  ${fromCode} → ${toCode}
-                </div>
-                <div style="font-size:12px;color:#94a3b8;margin-top:2px;">${cityLine}</div>
-                ${timeStr ? `<div style="font-size:13px;color:#64748b;margin-top:6px;">${timeStr}</div>` : ''}
+              <td style="vertical-align:top;">
+                <!-- Airport codes -->
+                <p style="margin:0;font-size:20px;font-weight:700;color:#0f172a;letter-spacing:-0.3px;">
+                  ${fromCode} &rarr; ${toCode}
+                </p>
+                <!-- City names -->
+                <p style="margin:2px 0 0 0;font-size:12px;color:#94a3b8;">
+                  ${fromCity} &rarr; ${toCity}
+                </p>
+                <!-- Times -->
+                ${timeStr ? `<p style="margin:6px 0 0 0;font-size:13px;color:#64748b;">${timeStr}</p>` : ''}
               </td>
-              <td style="vertical-align:top;text-align:right;white-space:nowrap;">
-                <div style="font-size:14px;font-weight:600;color:#0f172a;">${fmtDuration(result.duration)}</div>
-                <div style="font-size:12px;color:#94a3b8;margin-top:3px;">${stopsLabel(result.stops, result.layovers)}</div>
+              <!-- Duration + stops (right-aligned, fixed width) -->
+              <td style="vertical-align:top;text-align:right;padding-left:20px;white-space:nowrap;width:80px;">
+                <p style="margin:0;font-size:14px;font-weight:700;color:#0f172a;">${fmtDuration(result.duration)}</p>
+                <p style="margin:4px 0 0 0;font-size:12px;color:#94a3b8;">${stopsLabel(result.stops, result.layovers)}</p>
               </td>
             </tr>
           </table>
+
         </td>
       </tr>
     </table>`;
@@ -101,11 +114,7 @@ function buildAlertEmailHtml(
   isDeal = false,
 ): string {
   const hasReturn = !!result.returnDate;
-  const pct = result.dealPercent !== null ? Math.round(result.dealPercent) : null;
-  const dealBadge = result.dealRating !== 'unknown' ? `
-    <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;color:#fff;background:${dealColor(result.dealRating)};margin-left:8px;">
-      ${dealLabel(result.dealRating)}${pct ? ` −${pct}% vs avg` : ''}
-    </span>` : '';
+  const dealBadge = '';
 
   const year = new Date().getFullYear();
 
@@ -146,8 +155,8 @@ function buildAlertEmailHtml(
             </div>
 
             <!-- Flight legs -->
-            ${buildFlightCard(result, false)}
-            ${hasReturn ? buildFlightCard(result, true) : ''}
+            ${buildFlightCard(result, alertOriginName, false)}
+            ${hasReturn ? buildFlightCard(result, alertOriginName, true) : ''}
 
             <!-- Details table -->
             <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:16px 0 20px;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;padding:12px 0;">
