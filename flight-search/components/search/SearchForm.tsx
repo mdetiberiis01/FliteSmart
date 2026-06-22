@@ -64,43 +64,45 @@ export function SearchForm({ hook: externalHook }: Props) {
           }}
         />
 
-        {/* Trip duration — hidden for one-way searches */}
-        <div className={(form.tripType === 'oneway') ? 'hidden' : ''}>
-          <label className="block text-sm text-slate-600 mb-2">Trip length</label>
-          <div className="flex flex-wrap items-center gap-2">
-            {TRIP_DAY_PRESETS.map((days) => (
-              <motion.button
-                key={days}
-                type="button"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => updateField('tripDays', days)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
-                  form.tripDays === days
-                    ? 'bg-brand border-brand text-white shadow-md'
-                    : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {days}d
-              </motion.button>
-            ))}
-            <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-full px-3 py-1.5">
-              <input
-                type="number"
-                min={1}
-                max={90}
-                value={TRIP_DAY_PRESETS.includes(form.tripDays ?? 7) ? '' : (form.tripDays ?? '')}
-                onChange={(e) => {
-                  const v = parseInt(e.target.value);
-                  if (!isNaN(v) && v >= 1 && v <= 90) updateField('tripDays', v);
-                }}
-                placeholder="Custom"
-                className="w-14 bg-transparent text-slate-700 text-sm focus:outline-none placeholder-slate-400 text-center"
-              />
-              <span className="text-slate-400 text-xs">days</span>
+        {/* Trip duration — not shown for one-way searches */}
+        {form.tripType !== 'oneway' && (
+          <div>
+            <label className="block text-sm text-slate-600 mb-2">Trip length</label>
+            <div className="flex flex-wrap items-center gap-2">
+              {TRIP_DAY_PRESETS.map((days) => (
+                <motion.button
+                  key={days}
+                  type="button"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => updateField('tripDays', days)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                    form.tripDays === days
+                      ? 'bg-brand border-brand text-white shadow-md'
+                      : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {days}d
+                </motion.button>
+              ))}
+              <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-full px-3 py-1.5">
+                <input
+                  type="number"
+                  min={1}
+                  max={90}
+                  value={TRIP_DAY_PRESETS.includes(form.tripDays ?? 7) ? '' : (form.tripDays ?? '')}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value);
+                    if (!isNaN(v) && v >= 1 && v <= 90) updateField('tripDays', v);
+                  }}
+                  placeholder="Custom"
+                  className="w-14 bg-transparent text-slate-700 text-sm focus:outline-none placeholder-slate-400 text-center"
+                />
+                <span className="text-slate-400 text-xs">days</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Budget slider */}
