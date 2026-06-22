@@ -61,10 +61,7 @@ export function FlightCard({ result, index, cabinClass = 'economy', travelers = 
     const dest = result.destination || '';
     const dep = result.departureDate || '';
     const cabin = GOOGLE_CABIN[cabinClass] ?? 'e';
-    // Round-trip: use SerpAPI's verified Google Flights URL (the #search fragment
-    // format does not support round-trip return dates in the current Google Flights).
-    // One-way: build a per-result URL with the exact departure date.
-    const url = !isOneWay && result.bookingUrl?.startsWith('https://www.google.com')
+    const url = result.bookingUrl?.startsWith('https://www.google.com')
       ? result.bookingUrl
       : `https://www.google.com/flights#search;f=${origin};t=${dest};d=${dep};tt=${cabin};tc=${travelers}`;
     window.open(url, '_blank', 'noopener,noreferrer');
