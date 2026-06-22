@@ -75,8 +75,8 @@ function AddAlertContent() {
         throw new Error(data.error || 'Something went wrong');
       }
 
-      setStatus('success');
       toast.success('Price alert created');
+      router.push('/account/alerts');
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
       setStatus('error');
@@ -99,22 +99,7 @@ function AddAlertContent() {
           </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 md:p-8">
-            {status === 'success' ? (
-              <div className="text-center py-6">
-                <div className="text-4xl mb-4">✓</div>
-                <h2 className="text-xl font-semibold text-slate-900 mb-2">Alert created!</h2>
-                <p className="text-slate-500 text-sm">
-                  We&apos;ll email you when prices drop below your target.
-                </p>
-                <button
-                  onClick={() => router.push('/account')}
-                  className="mt-6 px-6 py-2.5 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-dark transition"
-                >
-                  Back to my account
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Row 1: From / To */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <OriginInput
@@ -204,7 +189,7 @@ function AddAlertContent() {
                 )}
 
                 <div className="flex items-center justify-between">
-                  <Link href="/account" className="text-sm text-slate-400 hover:text-slate-900 transition">
+                  <Link href="/account/alerts" className="text-sm text-slate-400 hover:text-slate-900 transition">
                     Cancel
                   </Link>
                   <motion.button
@@ -218,7 +203,6 @@ function AddAlertContent() {
                   </motion.button>
                 </div>
               </form>
-            )}
           </div>
         </div>
       </section>
