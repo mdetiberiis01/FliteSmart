@@ -11,10 +11,10 @@ interface NavProps {
 }
 
 const DROPDOWN_ITEMS = [
-  { label: 'My Trips', href: '#' },
-  { label: 'Price Alerts', href: '/alerts' },
-  { label: 'Saved Flights', href: '#' },
-  { label: 'Notifications', href: '#' },
+  { label: 'Price Alerts', href: '/account/alerts' },
+  { label: 'My Trips', href: '/account/trips' },
+  { label: 'Saved Flights', href: '/account/saved' },
+  { label: 'Notifications', href: '/account/notifications' },
   { label: 'Account Info', href: '/account' },
 ];
 
