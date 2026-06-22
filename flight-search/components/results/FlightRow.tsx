@@ -34,7 +34,7 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
     const dest = result.destination || '';
     const dep = result.departureDate || '';
     const cabin = GOOGLE_CABIN[cabinClass] ?? 'e';
-    const url = !isOneWay && result.bookingUrl?.startsWith('https://www.google.com')
+    const url = result.bookingUrl?.startsWith('https://www.google.com')
       ? result.bookingUrl
       : `https://www.google.com/travel/flights#search;f=${origin};t=${dest};d=${dep}${!isOneWay && result.returnDate ? `;r=${result.returnDate}` : ''};tt=${cabin};tc=${travelers}`;
     window.open(url, '_blank', 'noopener,noreferrer');

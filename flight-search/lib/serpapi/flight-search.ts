@@ -127,7 +127,12 @@ export async function searchFlights(
           bookingToken: it.booking_token,
         };
       })
-      .sort((a, b) => a.price - b.price);
+      .sort((a, b) => {
+        // Prefer fewer stops; only break ties on price (with a $60/stop penalty)
+        const aEff = a.price + a.stops * 60;
+        const bEff = b.price + b.stops * 60;
+        return aEff - bEff;
+      });
 
     const pricePoints: PricePoint[] = [];
     if (data.price_insights?.price_history) {
