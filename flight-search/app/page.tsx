@@ -44,15 +44,20 @@ const fadeUp = {
 
 export default function Home() {
   const hook = useSearchForm();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const homeAirport = user?.user_metadata?.home_airport as string | undefined;
   const homeAirportName = user?.user_metadata?.home_airport_name as string | undefined;
   const router = useRouter();
   const [needsOrigin, setNeedsOrigin] = useState(false);
 
-  // Auto-request location on page load to pre-fill origin
+  // Priority: typed origin > home airport (account) > geolocation
+  // Wait for auth to finish loading before falling back to geo, so we
+  // don't start a geo request for a user who actually has a home airport set.
   useEffect(() => {
-    if (homeAirport || !('geolocation' in navigator)) return;
+    if (authLoading) return;                          // wait for auth to resolve
+    if (homeAirport || hook.form.origin) return;      // already have an origin
+    if (!('geolocation' in navigator)) return;
+
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
@@ -68,7 +73,7 @@ export default function Home() {
       () => {} // permission denied — silently skip
     );
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [homeAirport]);
+  }, [authLoading, homeAirport]);
 
   function handleTrendingSelect(dest: TrendingDest) {
     const origin = hook.form.origin;
