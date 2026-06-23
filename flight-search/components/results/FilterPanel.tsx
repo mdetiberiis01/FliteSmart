@@ -104,11 +104,13 @@ function CheckRow({ label, count, checked, onChange }: CheckRowProps) {
 
 interface RangeProps {
   min: number; max: number; value: number;
+  clampMin?: number;
   onChange: (v: number) => void;
   format: (v: number) => string;
   isMax?: boolean;
 }
-function RangeSlider({ min, max, value, onChange, format, isMax }: RangeProps) {
+function RangeSlider({ min, max, value, clampMin, onChange, format, isMax }: RangeProps) {
+  // pct uses min=0 so the visual position of clampMin is proportional to the full range
   const pct = max > min ? ((value - min) / (max - min)) * 100 : 0;
   return (
     <div>
@@ -117,7 +119,7 @@ function RangeSlider({ min, max, value, onChange, format, isMax }: RangeProps) {
         <div className="absolute top-1.5 h-2 bg-brand rounded-full"
           style={isMax ? { left: 0, right: `${100 - pct}%` } : { left: `${pct}%`, right: 0 }} />
         <input
-          type="range" min={min} max={max} value={value}
+          type="range" min={clampMin ?? min} max={max} value={value}
           onChange={e => onChange(Number(e.target.value))}
           style={{ accentColor: '#0077b6' }}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -249,6 +251,7 @@ export function FilterPanel({ results, filters, onChange }: Props) {
     const hasHours = results.some(r => r.departureHour !== undefined);
     const hasArrival = results.some(r => r.arrivalHour !== undefined);
     const minDurationHours = durations.length ? Math.ceil(Math.min(...durations) / 60) : 1;
+    const minDuration = durations.length ? Math.floor(Math.min(...durations)) : 0;
 
     for (const r of results) {
       stopCounts[Math.min(r.stops, 2)] = (stopCounts[Math.min(r.stops, 2)] ?? 0) + 1;
@@ -258,6 +261,7 @@ export function FilterPanel({ results, filters, onChange }: Props) {
     return {
       minPrice: Math.floor(Math.min(...prices)),
       maxPrice: Math.ceil(Math.max(...prices)),
+      minDuration,
       maxDuration: Math.ceil(Math.max(...durations)),
       stopCounts,
       airlines: Object.entries(airlineCounts).sort((a, b) => b[1] - a[1]).slice(0, 8),
@@ -388,7 +392,8 @@ export function FilterPanel({ results, filters, onChange }: Props) {
           <RangeSlider
             min={0}
             max={stats.maxDuration}
-            value={filters.maxDurationMin === Infinity ? stats.maxDuration : filters.maxDurationMin}
+            clampMin={stats.minDuration}
+            value={filters.maxDurationMin === Infinity ? stats.maxDuration : Math.max(filters.maxDurationMin, stats.minDuration)}
             onChange={v => onChange({ ...filters, maxDurationMin: v >= stats.maxDuration ? Infinity : v })}
             format={v => v >= stats.maxDuration ? 'Any' : fmtDuration(v)}
             isMax
