@@ -10,6 +10,63 @@ function getResend() {
 const FROM = 'FliteSmart <alerts@flitesmart.com>';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.flitesmart.com';
 
+const US_STATES: Record<string, string> = {
+  JFK:'NY', LGA:'NY', EWR:'NJ', BOS:'MA', PHL:'PA', BWI:'MD', DCA:'VA', IAD:'VA',
+  BDL:'CT', PVD:'RI', MHT:'NH', BTV:'VT', PWM:'ME', ALB:'NY', BUF:'NY', ROC:'NY',
+  SYR:'NY', HPN:'NY', ISP:'NY', SWF:'NY', ACY:'NJ', TTN:'NJ',
+  RIC:'VA', ROA:'VA', ORF:'VA', CHO:'VA', LYH:'VA', CRW:'WV', HTS:'WV',
+  PIT:'PA', ABE:'PA', MDT:'PA', AVP:'PA', ERI:'PA',
+  RDU:'NC', CLT:'NC', GSO:'NC', AVL:'NC', ILM:'NC',
+  CAE:'SC', GSP:'SC', CHS:'SC', MYR:'SC',
+  ATL:'GA', SAV:'GA', AGS:'GA',
+  BNA:'TN', MEM:'TN', TYS:'TN', CHA:'TN',
+  SDF:'KY', LEX:'KY', CVG:'KY',
+  BHM:'AL', HSV:'AL', MGM:'AL',
+  JAN:'MS', GPT:'MS',
+  MSY:'LA', BTR:'LA',
+  MIA:'FL', FLL:'FL', MCO:'FL', TPA:'FL', PNS:'FL', JAX:'FL', TLH:'FL',
+  RSW:'FL', SRQ:'FL', EYW:'FL', MLB:'FL', GNV:'FL', SFB:'FL', DAB:'FL',
+  ORD:'IL', MDW:'IL',
+  IND:'IN', SBN:'IN',
+  DTW:'MI', GRR:'MI', FNT:'MI', LAN:'MI',
+  MKE:'WI', MSP:'MN',
+  STL:'MO', MCI:'MO', SGF:'MO',
+  CLE:'OH', CMH:'OH', DAY:'OH', TOL:'OH', CAK:'OH',
+  DFW:'TX', IAH:'TX', HOU:'TX', SAT:'TX', AUS:'TX', ELP:'TX', MAF:'TX', AMA:'TX', LBB:'TX',
+  OKC:'OK', TUL:'OK',
+  LIT:'AR', XNA:'AR',
+  ICT:'KS', MHK:'KS',
+  OMA:'NE', LNK:'NE',
+  DSM:'IA', CID:'IA',
+  ABQ:'NM', SAF:'NM',
+  DEN:'CO', SLC:'UT',
+  LAS:'NV', RNO:'NV',
+  PHX:'AZ', TUC:'AZ', FLG:'AZ', YUM:'AZ', GCN:'AZ',
+  BOI:'ID',
+  BZN:'MT', BTM:'MT', MSO:'MT', GTF:'MT',
+  FAR:'ND', GFK:'ND', FSD:'SD',
+  SEA:'WA', GEG:'WA',
+  PDX:'OR',
+  LAX:'CA', SFO:'CA', SAN:'CA', SJC:'CA', OAK:'CA', SMF:'CA', FAT:'CA',
+  SBA:'CA', BUR:'CA', LGB:'CA', ONT:'CA', PSP:'CA', STS:'CA', ACV:'CA', MRY:'CA',
+  HNL:'HI', OGG:'HI', KOA:'HI', LIH:'HI',
+  ANC:'AK', FAI:'AK',
+};
+
+function formatLocation(city: string, country: string, code: string): string {
+  if (country === 'United States') {
+    const st = US_STATES[code];
+    return st ? `${city}, ${st}` : `${city}, US`;
+  }
+  return `${city}, ${country}`;
+}
+
+function formatOriginHeader(alertOriginName: string, originCode: string): string {
+  const city = alertOriginName.replace(/\s*\([A-Z]{3,4}\)\s*$/, '').trim();
+  const st = US_STATES[originCode];
+  return st ? `${city}, ${st} (${originCode})` : `${alertOriginName}`;
+}
+
 function fmtHour(h: number): string {
   if (h === 0) return '12:00 AM';
   if (h < 12) return `${h}:00 AM`;
@@ -83,13 +140,13 @@ function buildFlightCard(result: SearchResult, originName: string, isReturn = fa
           <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
             <tr>
               <td style="vertical-align:top;">
-                <!-- Airport codes -->
-                <p style="margin:0;font-size:20px;font-weight:700;color:#0f172a;letter-spacing:-0.3px;">
-                  ${fromCode} &rarr; ${toCode}
-                </p>
                 <!-- City names -->
-                <p style="margin:2px 0 0 0;font-size:12px;color:#94a3b8;">
+                <p style="margin:0;font-size:20px;font-weight:700;color:#0f172a;letter-spacing:-0.3px;">
                   ${fromCity} &rarr; ${toCity}
+                </p>
+                <!-- Airport codes -->
+                <p style="margin:2px 0 0 0;font-size:12px;color:#94a3b8;">
+                  ${fromCode} &rarr; ${toCode}
                 </p>
                 <!-- Times -->
                 ${timeStr ? `<p style="margin:6px 0 0 0;font-size:13px;color:#64748b;">${timeStr}</p>` : ''}
@@ -140,7 +197,7 @@ function buildAlertEmailHtml(
               ${isDeal ? '⚡ Flash Deal Alert' : '🔔 Price Alert'}
             </div>
             <div style="font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">
-              ${alertOriginName} → <span style="text-transform:capitalize;">${alertDestination}</span>
+              ${formatOriginHeader(alertOriginName, result.origin)} &rarr; ${formatLocation(result.destinationCity || result.destination, result.destinationCountry || '', result.destination)} (${result.destination})
             </div>
           </div>
 
