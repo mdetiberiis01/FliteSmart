@@ -169,7 +169,7 @@ export function ResultsGrid({ results, isLoading, cabinClass = 'economy', travel
               <motion.div
                 initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
                 transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-                className="fixed left-0 top-0 bottom-0 w-72 bg-white z-50 lg:hidden overflow-y-auto p-5 shadow-xl"
+                className="fixed left-0 top-0 bottom-0 w-[85vw] max-w-xs bg-white z-50 lg:hidden overflow-y-auto p-5 shadow-xl"
               >
                 <div className="flex items-center justify-between mb-4">
                   <span className="font-semibold text-slate-900">Filters</span>

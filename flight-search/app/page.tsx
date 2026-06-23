@@ -170,7 +170,7 @@ export default function Home() {
 
       {/* Trust bar */}
       <div className="bg-slate-50 border-b border-slate-200 py-3 px-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-6 text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto flex items-center justify-center gap-3 sm:gap-6 text-xs text-slate-500">
           {TRUST_ITEMS.map((item, i) => (
             <motion.span
               key={item.strong}
@@ -210,7 +210,7 @@ export default function Home() {
           >
             Why FliteSmart
           </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
             {FEATURES.map((f, i) => (
               <motion.div
                 key={f.title}
@@ -219,7 +219,7 @@ export default function Home() {
                 initial="hidden"
                 whileInView="show"
                 viewport={{ once: true }}
-                className="flex gap-5 p-6 rounded-2xl border border-slate-200 bg-white hover:border-slate-300 transition"
+                className="flex gap-5 p-4 md:p-6 rounded-2xl border border-slate-200 bg-white hover:border-slate-300 transition"
               >
                 <div className="shrink-0 mt-0.5 w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center">
                   <f.icon className="w-5 h-5 text-brand" strokeWidth={1.75} />

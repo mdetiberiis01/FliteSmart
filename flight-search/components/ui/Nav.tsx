@@ -116,7 +116,7 @@ export function Nav({ activePage }: NavProps) {
         <div className="flex md:hidden items-center">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition"
+            className="p-2.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition"
             aria-label="Toggle menu"
           >
             {menuOpen ? (

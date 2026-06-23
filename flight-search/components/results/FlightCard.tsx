@@ -48,14 +48,14 @@ interface LegRowProps {
 
 function LegRow({ airlineCode, date, from, to, stops, layovers, layoverDurations, duration, depHour, arrHour }: LegRowProps) {
   return (
-    <div className="flex items-center gap-3 py-2.5">
+    <div className="flex items-center gap-2 sm:gap-3 py-2.5">
       <AirlineLogo code={airlineCode} size={32} />
       <RouteBar from={from} to={to} stops={stops} layovers={layovers} layoverDurations={layoverDurations} fromDate={date} />
       {duration && (
         <div className="shrink-0 text-right">
           <div className="text-xs text-slate-400">{formatDuration(duration)}</div>
           {depHour !== undefined && arrHour !== undefined && (
-            <div className="text-[10px] text-slate-400 tabular-nums">
+            <div className="text-xs text-slate-400 tabular-nums">
               {fmtHour(depHour)} → {fmtHour(arrHour)}
             </div>
           )}
@@ -151,7 +151,7 @@ export function FlightCard({ result, index, cabinClass = 'economy', travelers = 
       {/* CTA footer */}
       <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between">
         <span className="text-xs text-slate-400">google.com/flights</span>
-        <span className="text-xs text-slate-500 font-medium group-hover:text-brand transition-colors">
+        <span className="text-sm text-slate-500 font-medium group-hover:text-brand transition-colors">
           Book now →
         </span>
       </div>

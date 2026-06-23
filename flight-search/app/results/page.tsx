@@ -247,11 +247,16 @@ function ResultsContent() {
               <span className="bg-white border border-slate-200 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
                 {originName} → {destination}
               </span>
-              <span className="bg-white border border-slate-200 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
+              {/* Mobile condensed chip */}
+              <span className="sm:hidden bg-white border border-slate-200 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
+                {flexLabel}{tripType !== 'oneway' ? ` · ${tripDays}d RT` : ' · one-way'}
+              </span>
+              {/* Desktop chips */}
+              <span className="hidden sm:inline-flex bg-white border border-slate-200 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
                 {flexLabel}
               </span>
               {tripType !== 'oneway' && (
-                <span className="bg-white border border-slate-200 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
+                <span className="hidden sm:inline-flex bg-white border border-slate-200 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
                   {tripDays} day{tripDays !== 1 ? 's' : ''}
                 </span>
               )}
@@ -276,7 +281,7 @@ function ResultsContent() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.6 }}
-            className="mt-8 rounded-2xl border border-brand-50 bg-[#e0f4ff] px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+            className="mt-8 rounded-2xl border border-brand-50 bg-[#e0f4ff] px-4 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
           >
             <div className="flex items-start gap-3">
               <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center shrink-0 mt-0.5">
@@ -294,7 +299,7 @@ function ResultsContent() {
             </div>
             <a
               href={`/account/add-alert?origin=${encodeURIComponent(origin)}&originName=${encodeURIComponent(originName)}&destination=${encodeURIComponent(destination)}`}
-              className="shrink-0 px-5 py-2.5 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-dark transition whitespace-nowrap"
+              className="shrink-0 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-dark transition whitespace-nowrap"
             >
               Set a price alert
             </a>

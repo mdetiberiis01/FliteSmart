@@ -57,14 +57,26 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
     >
       <div className="flex items-stretch gap-0">
 
-        {/* ── Left: destination name ── */}
-        <div className="px-2 sm:px-3 py-3 flex flex-col justify-center w-24 sm:w-36 shrink-0 border-r border-slate-100">
+        {/* ── Left: destination name + mobile flight times ── */}
+        <div className="px-2 sm:px-3 py-3 flex flex-col justify-center w-28 sm:w-36 shrink-0 border-r border-slate-100">
+          {/* Outbound time — mobile only, above city */}
+          {result.departureHour !== undefined && result.arrivalHour !== undefined && (
+            <span className="sm:hidden block text-[10px] text-slate-400 tabular-nums mb-1 leading-tight text-right">
+              {fmtHour(result.departureHour)} → {fmtHour(result.arrivalHour)}
+            </span>
+          )}
           <div className="font-semibold text-slate-900 text-xs sm:text-sm leading-tight break-words">
             {result.destinationCity || result.destination}
           </div>
           <div className="text-xs text-slate-400 break-words mt-0.5">
             {result.destinationCountry}
           </div>
+          {/* Return time — mobile only, below country */}
+          {!isOneWay && result.returnDepartureHour !== undefined && result.returnArrivalHour !== undefined && (
+            <span className="sm:hidden block text-[10px] text-slate-400 tabular-nums mt-1 leading-tight text-right">
+              {fmtHour(result.returnDepartureHour)} → {fmtHour(result.returnArrivalHour)}
+            </span>
+          )}
         </div>
 
         {/* ── Middle: flight legs ── */}
@@ -73,7 +85,7 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
           {/* Outbound leg */}
           <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2.5">
             <AirlineLogo code={result.airlineCode} size={24} />
-            <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+            <div className="flex-1 min-w-0">
               <RouteBar
                 from={result.origin}
                 to={result.destination}
@@ -82,11 +94,6 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
                 layoverDurations={result.layoverDurations}
                 fromDate={formatLegDate(result.departureDate)}
               />
-              <span className="text-[10px] text-slate-400 tabular-nums sm:hidden">
-                {result.duration ? formatDuration(result.duration) : ''}
-                {result.departureHour !== undefined && result.arrivalHour !== undefined &&
-                  ` · ${fmtHour(result.departureHour)} → ${fmtHour(result.arrivalHour)}`}
-              </span>
             </div>
             <div className="shrink-0 hidden sm:flex flex-col items-end gap-0.5">
               {result.duration && (
@@ -95,7 +102,7 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
                 </span>
               )}
               {result.departureHour !== undefined && result.arrivalHour !== undefined && (
-                <span className="text-[10px] text-slate-400 tabular-nums">
+                <span className="text-xs text-slate-400 tabular-nums">
                   {fmtHour(result.departureHour)} → {fmtHour(result.arrivalHour)}
                 </span>
               )}
@@ -106,7 +113,7 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
           {!isOneWay && result.returnDate && (
             <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2.5">
               <AirlineLogo code={result.airlineCode} size={24} />
-              <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+              <div className="flex-1 min-w-0">
                 <RouteBar
                   from={result.destination}
                   to={result.origin}
@@ -115,11 +122,6 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
                   layoverDurations={result.layoverDurations}
                   fromDate={formatLegDate(result.returnDate)}
                 />
-                <span className="text-[10px] text-slate-400 tabular-nums sm:hidden">
-                  {result.duration ? formatDuration(result.duration) : ''}
-                  {result.returnDepartureHour !== undefined && result.returnArrivalHour !== undefined &&
-                    ` · ${fmtHour(result.returnDepartureHour)} → ${fmtHour(result.returnArrivalHour)}`}
-                </span>
               </div>
               <div className="shrink-0 hidden sm:flex flex-col items-end gap-0.5">
                 {result.duration && (
@@ -128,7 +130,7 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
                   </span>
                 )}
                 {result.returnDepartureHour !== undefined && result.returnArrivalHour !== undefined && (
-                  <span className="text-[10px] text-slate-400 tabular-nums">
+                  <span className="text-xs text-slate-400 tabular-nums">
                     {fmtHour(result.returnDepartureHour)} → {fmtHour(result.returnArrivalHour)}
                   </span>
                 )}
@@ -138,7 +140,7 @@ export function FlightRow({ result, index, cabinClass = 'economy', travelers = 1
         </div>
 
         {/* ── Right: baggage + price + CTA ── */}
-        <div className="flex flex-col items-end justify-center gap-1.5 px-3 py-3 border-l border-slate-100 shrink-0">
+        <div className="flex flex-col items-end justify-center gap-1.5 px-2 py-2 sm:px-3 sm:py-3 border-l border-slate-100 shrink-0">
           <BaggageInfo carryOn={1} checked={0} />
           <div className="text-lg sm:text-xl font-bold text-slate-900 tabular-nums">
             {formatPrice(result.price, result.currency)}
