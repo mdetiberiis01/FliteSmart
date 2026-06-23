@@ -113,13 +113,14 @@ function buildFlightCard(result: SearchResult, originName: string, isReturn = fa
   const label   = isReturn ? 'Return' : 'Outbound';
 
   const destCity = result.destinationCity || result.destinationName || result.destination;
+  const originCity = originName.replace(/\s*\([A-Z]{3,4}\)\s*$/, '').trim();
 
   // Airport codes: outbound = origin→dest, return = dest→origin
   const fromCode = isReturn ? result.destination : result.origin;
   const toCode   = isReturn ? result.origin       : result.destination;
-  // City names follow the same direction
-  const fromCity = isReturn ? destCity    : originName;
-  const toCity   = isReturn ? originName  : destCity;
+  // City names only (no airport codes)
+  const fromCity = isReturn ? destCity    : originCity;
+  const toCity   = isReturn ? originCity  : destCity;
 
   const timeStr = depHour !== undefined && arrHour !== undefined
     ? `${fmtHour(depHour)} &rarr; ${fmtHour(arrHour)}`
