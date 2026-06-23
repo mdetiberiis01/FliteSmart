@@ -20,20 +20,20 @@ function dealColor(rating: string | null | undefined): string {
   return DEAL_COLORS[rating ?? ''] ?? '#6b7280';
 }
 
-const TILE_DARK  = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 const TILE_LIGHT = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
 
-// Returns pixel size and font size for a given zoom level
 function markerDimensions(zoom: number): { size: number; fontSize: number; showPrice: boolean } {
   const rawSize = Math.round(Math.max(16, Math.min(68, zoom * 5.5 - 4)));
   const showPrice = rawSize >= 17;
   const fontSize = Math.round(Math.max(11, Math.min(16, zoom * 1.6 - 2)));
-  // When showing price, enforce a minimum diameter so the text fits inside the circle
   const size = showPrice ? Math.max(rawSize, Math.round(fontSize * 3)) : rawSize;
   return { size, fontSize, showPrice };
 }
 
 type LeafletType = typeof import('leaflet');
+type LeafletMap = ReturnType<LeafletType['map']>;
+type LeafletMarker = ReturnType<LeafletType['marker']>;
+type MarkerEntry = { marker: LeafletMarker; color: string; priceLabel: string };
 
 function makeIcon(L: LeafletType, color: string, priceLabel: string, zoom: number) {
   const { size, fontSize, showPrice } = markerDimensions(zoom);
@@ -53,10 +53,82 @@ function makeIcon(L: LeafletType, color: string, priceLabel: string, zoom: numbe
   });
 }
 
+function renderMarkers(
+  L: LeafletType,
+  map: LeafletMap,
+  results: SearchResult[],
+  markersRef: React.MutableRefObject<MarkerEntry[]>
+) {
+  // Clear existing destination markers
+  for (const { marker } of markersRef.current) marker.remove();
+  markersRef.current = [];
+
+  // Cheapest price per city
+  const cheapestByCity = new Map<string, SearchResult>();
+  for (const result of results) {
+    const cityKey = (result.destinationCity || result.destination).toLowerCase();
+    const existing = cheapestByCity.get(cityKey);
+    if (!existing || result.price < existing.price) cheapestByCity.set(cityKey, result);
+  }
+
+  const destPoints: [number, number][] = [];
+  const zoom = map.getZoom();
+
+  for (const result of cheapestByCity.values()) {
+    const destCoords = getAirportCoords(result.destination);
+    if (!destCoords) continue;
+
+    destPoints.push(destCoords);
+
+    const color = dealColor(result.dealRating);
+    const priceLabel = result.price >= 1000
+      ? '$' + (result.price / 1000).toFixed(result.price % 1000 === 0 ? 0 : 1) + 'k'
+      : '$' + result.price;
+
+    const depDate = result.departureDate
+      ? new Date(result.departureDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      : '';
+    const retDate = result.returnDate
+      ? new Date(result.returnDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      : '';
+    const dealLabel = result.dealRating
+      ? `<span style="background:${color};color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;">${result.dealRating} deal</span>`
+      : '';
+
+    const marker = L.marker(destCoords, { icon: makeIcon(L, color, priceLabel, zoom) })
+      .addTo(map)
+      .bindPopup(`
+        <div style="font-family:system-ui,sans-serif;min-width:160px;">
+          <div style="font-size:14px;font-weight:700;margin-bottom:4px;">${result.destinationCity ?? result.destination}</div>
+          <div style="font-size:12px;color:#888;margin-bottom:6px;">${result.destinationCountry ?? ''}</div>
+          <div style="font-size:20px;font-weight:800;color:${color};margin-bottom:4px;">$${result.price}</div>
+          ${dealLabel ? `<div style="margin-bottom:6px;">${dealLabel}</div>` : ''}
+          <div style="font-size:11px;color:#666;">${result.airline}</div>
+          ${depDate ? `<div style="font-size:11px;color:#888;margin-top:2px;">${depDate}${retDate ? ' → ' + retDate : ''}</div>` : ''}
+          ${result.stops === 0 ? '<div style="font-size:10px;color:#34d399;margin-top:2px;">Nonstop</div>' : `<div style="font-size:10px;color:#888;margin-top:2px;">${result.stops} stop${result.stops !== 1 ? 's' : ''}</div>`}
+        </div>
+      `, { maxWidth: 220 });
+
+    markersRef.current.push({ marker, color, priceLabel });
+  }
+
+  if (destPoints.length > 1) {
+    map.fitBounds(L.latLngBounds(destPoints), { padding: [50, 50], animate: false });
+  } else if (destPoints.length === 1) {
+    map.setView(destPoints[0], 6, { animate: false });
+  }
+}
+
 export default function MapInner({ results, origin }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<unknown>(null);
+  const mapInstanceRef = useRef<LeafletMap | null>(null);
+  const leafletRef = useRef<LeafletType | null>(null);
+  const destMarkersRef = useRef<MarkerEntry[]>([]);
+  // Always holds the latest results so the init effect can use them after async load
+  const resultsRef = useRef(results);
+  resultsRef.current = results;
 
+  // Initialize map once
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
@@ -81,72 +153,7 @@ export default function MapInner({ results, origin }: Props) {
         maxZoom: 19,
       }).addTo(map);
 
-      mapInstanceRef.current = map;
-
-      // Deduplicate by city — one marker per city, cheapest price
-      const cheapestByCity = new Map<string, typeof results[number]>();
-      for (const result of results) {
-        const cityKey = (result.destinationCity || result.destination).toLowerCase();
-        const existing = cheapestByCity.get(cityKey);
-        if (!existing || result.price < existing.price) {
-          cheapestByCity.set(cityKey, result);
-        }
-      }
-
-      // Build marker data — store marker refs so we can resize on zoom
-      type MarkerEntry = { marker: ReturnType<LeafletType['marker']>; color: string; priceLabel: string };
-      const markerEntries: MarkerEntry[] = [];
-      const destPoints: [number, number][] = [];
-
-      for (const result of cheapestByCity.values()) {
-        const destCoords = getAirportCoords(result.destination);
-        if (!destCoords) continue;
-
-        destPoints.push(destCoords);
-
-        const color = dealColor(result.dealRating);
-        const priceLabel = result.price >= 1000
-          ? '$' + (result.price / 1000).toFixed(result.price % 1000 === 0 ? 0 : 1) + 'k'
-          : '$' + result.price;
-
-        const depDate = result.departureDate
-          ? new Date(result.departureDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-          : '';
-        const retDate = result.returnDate
-          ? new Date(result.returnDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-          : '';
-        const dealLabel = result.dealRating
-          ? `<span style="background:${color};color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;">${result.dealRating} deal</span>`
-          : '';
-
-        const marker = L.marker(destCoords, { icon: makeIcon(L, color, priceLabel, 2) })
-          .addTo(map)
-          .bindPopup(`
-            <div style="font-family:system-ui,sans-serif;min-width:160px;">
-              <div style="font-size:14px;font-weight:700;margin-bottom:4px;">${result.destinationCity ?? result.destination}</div>
-              <div style="font-size:12px;color:#888;margin-bottom:6px;">${result.destinationCountry ?? ''}</div>
-              <div style="font-size:20px;font-weight:800;color:${color};margin-bottom:4px;">$${result.price}</div>
-              ${dealLabel ? `<div style="margin-bottom:6px;">${dealLabel}</div>` : ''}
-              <div style="font-size:11px;color:#666;">${result.airline}</div>
-              ${depDate ? `<div style="font-size:11px;color:#888;margin-top:2px;">${depDate}${retDate ? ' → ' + retDate : ''}</div>` : ''}
-              ${result.stops === 0 ? '<div style="font-size:10px;color:#34d399;margin-top:2px;">Nonstop</div>' : `<div style="font-size:10px;color:#888;margin-top:2px;">${result.stops} stop${result.stops !== 1 ? 's' : ''}</div>`}
-            </div>
-          `, { maxWidth: 220 });
-
-        markerEntries.push({ marker, color, priceLabel });
-      }
-
-      // Resize all markers when zoom changes
-      function updateMarkerSizes() {
-        const zoom = map.getZoom();
-        for (const { marker, color, priceLabel } of markerEntries) {
-          marker.setIcon(makeIcon(L, color, priceLabel, zoom));
-        }
-      }
-
-      map.on('zoomend', updateMarkerSizes);
-
-      // Origin marker (fixed small dot)
+      // Origin marker (fixed, set once)
       const originCoords = getAirportCoords(origin);
       if (originCoords) {
         const originIcon = L.divIcon({
@@ -164,24 +171,42 @@ export default function MapInner({ results, origin }: Props) {
           .bindPopup(`<div style="font-family:system-ui,sans-serif;font-weight:700;">${origin} — Origin</div>`);
       }
 
-      // Fit bounds, then set initial marker sizes based on resulting zoom
-      if (destPoints.length > 1) {
-        map.fitBounds(L.latLngBounds(destPoints), { padding: [50, 50], animate: false });
-      } else if (destPoints.length === 1) {
-        map.setView(destPoints[0], 6, { animate: false });
-      }
-      updateMarkerSizes();
+      // Resize destination markers on zoom
+      map.on('zoomend', () => {
+        const zoom = map.getZoom();
+        for (const { marker, color, priceLabel } of destMarkersRef.current) {
+          marker.setIcon(makeIcon(L, color, priceLabel, zoom));
+        }
+      });
 
+      leafletRef.current = L;
+      mapInstanceRef.current = map;
+
+      // Render whatever results have already arrived (handles race where all
+      // results stream in before Leaflet finishes loading)
+      if (resultsRef.current.length > 0) {
+        renderMarkers(L, map, resultsRef.current, destMarkersRef);
+      }
     });
 
     return () => {
       if (mapInstanceRef.current) {
         (mapInstanceRef.current as { remove: () => void }).remove();
         mapInstanceRef.current = null;
+        leafletRef.current = null;
+        destMarkersRef.current = [];
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Update markers whenever results change
+  useEffect(() => {
+    const L = leafletRef.current;
+    const map = mapInstanceRef.current;
+    if (!L || !map) return; // map not ready yet — init effect handles this case via resultsRef
+    renderMarkers(L, map, results, destMarkersRef);
+  }, [results]);
 
   return (
     <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
