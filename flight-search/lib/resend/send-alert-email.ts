@@ -61,10 +61,18 @@ function formatLocation(city: string, country: string, code: string): string {
   return `${city}, ${country}`;
 }
 
-function formatOriginHeader(alertOriginName: string, originCode: string): string {
+// "New York, NY (JFK)" — with code, for flight card
+function formatOriginWithCode(alertOriginName: string, originCode: string): string {
   const city = alertOriginName.replace(/\s*\([A-Z]{3,4}\)\s*$/, '').trim();
   const st = US_STATES[originCode];
-  return st ? `${city}, ${st} (${originCode})` : `${alertOriginName}`;
+  return st ? `${city}, ${st} (${originCode})` : `${city} (${originCode})`;
+}
+
+// "New York, NY" — no code, for header bar
+function formatOriginCity(alertOriginName: string, originCode: string): string {
+  const city = alertOriginName.replace(/\s*\([A-Z]{3,4}\)\s*$/, '').trim();
+  const st = US_STATES[originCode];
+  return st ? `${city}, ${st}` : city;
 }
 
 function fmtHour(h: number): string {
@@ -113,14 +121,15 @@ function buildFlightCard(result: SearchResult, originName: string, isReturn = fa
   const label   = isReturn ? 'Return' : 'Outbound';
 
   const destCity = result.destinationCity || result.destinationName || result.destination;
-  const originCity = originName.replace(/\s*\([A-Z]{3,4}\)\s*$/, '').trim();
+  const destFormatted = `${formatLocation(destCity, result.destinationCountry || '', result.destination)} (${result.destination})`;
+  const originFormatted = formatOriginWithCode(originName, result.origin);
 
   // Airport codes: outbound = origin→dest, return = dest→origin
   const fromCode = isReturn ? result.destination : result.origin;
   const toCode   = isReturn ? result.origin       : result.destination;
-  // City names only (no airport codes)
-  const fromCity = isReturn ? destCity    : originCity;
-  const toCity   = isReturn ? originCity  : destCity;
+  // City, State (CODE) formatted labels
+  const fromCity = isReturn ? destFormatted    : originFormatted;
+  const toCity   = isReturn ? originFormatted  : destFormatted;
 
   const timeStr = depHour !== undefined && arrHour !== undefined
     ? `${fmtHour(depHour)} &rarr; ${fmtHour(arrHour)}`
@@ -198,7 +207,7 @@ function buildAlertEmailHtml(
               ${isDeal ? '⚡ Flash Deal Alert' : '🔔 Price Alert'}
             </div>
             <div style="font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">
-              ${formatOriginHeader(alertOriginName, result.origin)} &rarr; ${formatLocation(result.destinationCity || result.destination, result.destinationCountry || '', result.destination)} (${result.destination})
+              ${formatOriginCity(alertOriginName, result.origin)} &rarr; ${formatLocation(result.destinationCity || result.destination, result.destinationCountry || '', result.destination)}
             </div>
           </div>
 
