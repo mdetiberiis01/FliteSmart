@@ -4,6 +4,16 @@ import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { SearchResult } from '@/types/search';
+
+function clientDedup(results: SearchResult[]): SearchResult[] {
+  const map = new Map<string, SearchResult>();
+  for (const r of results) {
+    const key = `${r.destination}-${(r.departureDate ?? '').slice(0, 7)}`;
+    const existing = map.get(key);
+    if (!existing || r.price < existing.price) map.set(key, r);
+  }
+  return Array.from(map.values()).sort((a, b) => a.price - b.price);
+}
 import { ResultsGrid } from '@/components/results/ResultsGrid';
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
@@ -39,35 +49,72 @@ function ResultsContent() {
     }
 
     setIsLoading(true);
+    setResults([]);
     setError(null);
 
-    fetch('/api/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        origin,
-        originName,
-        destination,
-        flexibility,
-        tripType,
-        tripDays,
-        cabinClass,
-        travelers,
-        maxBudget: maxBudget || undefined,
-        customDateStart: searchParams.get('customDateStart') || undefined,
-        customDateEnd: searchParams.get('customDateEnd') || undefined,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) {
-          setError(data.error);
-        } else {
-          setResults(data.results || []);
+    const abortController = new AbortController();
+
+    async function runSearch() {
+      try {
+        const res = await fetch('/api/search/stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            origin,
+            originName,
+            destination,
+            flexibility,
+            tripType,
+            tripDays,
+            cabinClass,
+            travelers,
+            maxBudget: maxBudget || undefined,
+            customDateStart: searchParams.get('customDateStart') || undefined,
+            customDateEnd: searchParams.get('customDateEnd') || undefined,
+          }),
+          signal: abortController.signal,
+        });
+
+        if (!res.ok || !res.body) {
+          const data = await res.json().catch(() => ({}));
+          setError((data as { error?: string }).error || 'Search failed. Please check your connection.');
+          setIsLoading(false);
+          return;
         }
-      })
-      .catch(() => setError('Search failed. Please check your connection.'))
-      .finally(() => setIsLoading(false));
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const events = buffer.split('\n\n');
+          buffer = events.pop() ?? '';
+          for (const event of events) {
+            if (!event.startsWith('data: ')) continue;
+            try {
+              const payload = JSON.parse(event.slice(6)) as { done?: boolean; error?: string; results?: SearchResult[] };
+              if (payload.done) { setIsLoading(false); return; }
+              if (payload.error) { setError(payload.error); setIsLoading(false); return; }
+              if (payload.results?.length) {
+                setResults((prev) => clientDedup([...prev, ...payload.results!]));
+              }
+            } catch { /* ignore malformed chunks */ }
+          }
+        }
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') return;
+        setError('Search failed. Please check your connection.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    runSearch();
+
+    return () => abortController.abort();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [origin, destination, flexibility]);
 
@@ -178,7 +225,7 @@ function ResultsContent() {
         )}
 
         {/* Results header */}
-        {!isLoading && !error && (
+        {(!isLoading || results.length > 0) && !error && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -187,7 +234,7 @@ function ResultsContent() {
             <div className="flex items-baseline gap-3 flex-wrap">
               <h2 className="text-slate-900 text-2xl font-bold">
                 {results.length > 0
-                  ? `${results.length} flight${results.length !== 1 ? 's' : ''} found`
+                  ? `${results.length} flight${results.length !== 1 ? 's' : ''} found${isLoading ? '…' : ''}`
                   : 'Searching...'}
               </h2>
               {results.length > 0 && (

@@ -77,7 +77,7 @@ export function ResultsGrid({ results, isLoading, cabinClass = 'economy', travel
   const filterActive = isFilterActive(filters);
   const hiddenCount = results.length - displayResults.length;
 
-  if (isLoading) {
+  if (isLoading && results.length === 0) {
     return (
       <div className="flex gap-6">
         <div className="hidden lg:block w-60 shrink-0" />
@@ -230,6 +230,13 @@ export function ResultsGrid({ results, isLoading, cabinClass = 'economy', travel
             <button onClick={() => setFilters(defaultFilters)} className="text-slate-900 underline underline-offset-2">
               Clear filters
             </button>
+          </div>
+        )}
+
+        {isLoading && results.length > 0 && (
+          <div className="mt-3 flex items-center gap-2.5 text-sm text-slate-400 py-3 px-4 bg-white rounded-xl border border-slate-100">
+            <div className="w-3.5 h-3.5 border-2 border-brand border-t-transparent rounded-full animate-spin shrink-0" />
+            Finding more flights…
           </div>
         )}
       </div>

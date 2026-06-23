@@ -458,7 +458,11 @@ function buildResult(
 // Main
 // ---------------------------------------------------------------------------
 
-export async function orchestrateSearch(params: SearchParams, userIp?: string): Promise<SearchResult[]> {
+export async function orchestrateSearch(
+  params: SearchParams,
+  userIp?: string,
+  onBatch?: (results: SearchResult[]) => void
+): Promise<SearchResult[]> {
   const { origin, destination, flexibility, customDateStart, customDateEnd, tripDays = 7, cabinClass = 'economy', travelers = 1, maxBudget, tripType = 'roundtrip' } = params;
   const isOneWay = tripType === 'oneway';
 
@@ -468,7 +472,9 @@ export async function orchestrateSearch(params: SearchParams, userIp?: string): 
   if (isMockMode()) {
     console.log('[search] MOCK MODE — returning sample data, no API calls made');
     const dateRanges = getDateRanges(flexibility, customDateStart, customDateEnd);
-    return makeDemoResults(origin, destinationCodes, dateRanges, tripDays, cabinClass);
+    const demoResults = makeDemoResults(origin, destinationCodes, dateRanges, tripDays, cabinClass);
+    onBatch?.(demoResults);
+    return demoResults;
   }
 
   const dateRanges = getDateRanges(flexibility, customDateStart, customDateEnd);
@@ -494,17 +500,21 @@ export async function orchestrateSearch(params: SearchParams, userIp?: string): 
 
     await Promise.all(
       targets.map(async (destCode) => {
-        const searches = await Promise.all(
-          searchDates.map((dep) => searchFlightsWithFallback(origin, destCode, dep, isOneWay ? undefined : addDays(dep, tripDays), userIp, cabinClass))
-        );
-
         const combinedPricePoints: PricePoint[] = [];
-        for (const { flights, pricePoints, dataSource } of searches) {
-          const best = flights[0];
-          if (!best) continue;
-          allResults.push(buildResult(origin, destCode, best, pricePoints, dataSource));
-          combinedPricePoints.push(...pricePoints);
-        }
+
+        await Promise.all(
+          searchDates.map((dep) =>
+            searchFlightsWithFallback(origin, destCode, dep, isOneWay ? undefined : addDays(dep, tripDays), userIp, cabinClass)
+              .then(({ flights, pricePoints, dataSource }) => {
+                const best = flights[0];
+                if (!best) return;
+                const result = buildResult(origin, destCode, best, pricePoints, dataSource);
+                allResults.push(result);
+                onBatch?.([result]);
+                combinedPricePoints.push(...pricePoints);
+              })
+          )
+        );
 
         if (combinedPricePoints.length > 0) {
           const prices = combinedPricePoints.map((p) => p.price);
@@ -516,16 +526,19 @@ export async function orchestrateSearch(params: SearchParams, userIp?: string): 
     // Single destination: scan every week, return one card per week so user sees full price curve.
     const destCode = destinationCodes[0];
 
-    const searches = await Promise.all(
-      searchDates.map((dep) => searchFlightsWithFallback(origin, destCode, dep, isOneWay ? undefined : addDays(dep, tripDays), userIp, cabinClass))
+    await Promise.all(
+      searchDates.map((dep) =>
+        searchFlightsWithFallback(origin, destCode, dep, isOneWay ? undefined : addDays(dep, tripDays), userIp, cabinClass)
+          .then(({ flights, pricePoints, dataSource }) => {
+            const best = flights[0];
+            if (!best) return;
+            const result = buildResult(origin, destCode, best, pricePoints, dataSource);
+            allResults.push(result);
+            onBatch?.([result]);
+            cachePriceData(origin, destCode, pricePoints, best.price);
+          })
+      )
     );
-
-    for (const { flights, pricePoints, dataSource } of searches) {
-      const best = flights[0];
-      if (!best) continue;
-      allResults.push(buildResult(origin, destCode, best, pricePoints, dataSource));
-      cachePriceData(origin, destCode, pricePoints, best.price);
-    }
   }
 
   const merged = mergeAndDeduplicateResults(allResults);
