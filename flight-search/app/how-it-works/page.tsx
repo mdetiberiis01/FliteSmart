@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CalendarDays, TrendingUp, Tag, Bell, SlidersHorizontal, Globe, ArrowLeftRight, ExternalLink } from 'lucide-react';
+import { CalendarDays, TrendingUp, Tag, Bell, SlidersHorizontal, Globe, ArrowLeftRight, ExternalLink, Map, Zap } from 'lucide-react';
 import { Nav } from '@/components/ui/Nav';
 import { Footer } from '@/components/ui/Footer';
 
@@ -20,9 +20,19 @@ const SECTIONS = [
     desc: 'Not sure where you want to go? Type "Southeast Asia", "Europe", or "Anywhere" as your destination. We spread searches across the best airports in that region and return one result per destination so you can compare.',
   },
   {
+    Icon: Zap,
+    title: 'Live Streaming Results',
+    desc: 'Results populate the moment each flight is found — no waiting for the full search to finish before you can start browsing. A spinner at the bottom of the list lets you know when more are still on the way.',
+  },
+  {
+    Icon: Map,
+    title: 'Interactive Destination Map',
+    desc: 'Every search shows an interactive map with a color-coded dot for each destination — green for great deals, amber for fair, red for high prices. Click any dot to see the price, airline, dates, and deal rating at a glance.',
+  },
+  {
     Icon: SlidersHorizontal,
     title: 'Filters & Sort',
-    desc: 'A Kayak-style filter sidebar lets you narrow results by number of stops, departure and arrival time window, max price, max duration, and airline. Departure and arrival time sliders are linked — the arrival window automatically enforces a minimum gap based on the shortest flight in your results so you never filter yourself into zero results. Sort by price, date, duration, fewest stops, or best deal.',
+    desc: 'Narrow results by stops, departure and arrival time window, max price, max duration, and airline. The max duration slider\'s minimum is pinned to the shortest flight in your results so you can\'t accidentally filter everything out. Departure and arrival windows are linked the same way. Sort by price, date, duration, fewest stops, or best deal.',
   },
   {
     Icon: TrendingUp,
@@ -32,7 +42,7 @@ const SECTIONS = [
   {
     Icon: Tag,
     title: 'Deal Ratings',
-    desc: 'We compare each price to its 12-month historical average and label it Great, Good, Fair, or Above Average. The deal percentage tells you exactly how far above or below the average the price sits.',
+    desc: 'We compare each price to its 12-month historical low and average, then label it Great deal, Good deal, Fair price, or Above avg. When a price matches the 12-month low it\'s flagged as such. The deal percentage shows exactly how far the price sits above or below the historical average.',
   },
   {
     Icon: ExternalLink,
