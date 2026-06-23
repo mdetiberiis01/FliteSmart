@@ -118,6 +118,17 @@ export async function searchFlights(
         const layoverDurations = it.layovers
           ?.map((l) => l.duration)
           .filter((d): d is number => typeof d === 'number');
+        const arrivalHour = lastLeg?.arrival_airport?.time
+          ? parseInt(lastLeg.arrival_airport.time.split(' ')[1]?.split(':')[0] ?? '0', 10)
+          : undefined;
+        const durationHours = Math.round((it.total_duration ?? 0) / 60);
+        const returnDepartureHour = returnDate && arrivalHour !== undefined
+          ? (arrivalHour + 2) % 24
+          : undefined;
+        const returnArrivalHour = returnDepartureHour !== undefined
+          ? (returnDepartureHour + durationHours) % 24
+          : undefined;
+
         return {
           price: it.price,
           airline: firstLeg?.airline ?? '',
@@ -130,10 +141,10 @@ export async function searchFlights(
           departureHour: firstLeg?.departure_airport?.time
             ? parseInt(firstLeg.departure_airport.time.split(' ')[1]?.split(':')[0] ?? '0', 10)
             : undefined,
-          arrivalHour: lastLeg?.arrival_airport?.time
-            ? parseInt(lastLeg.arrival_airport.time.split(' ')[1]?.split(':')[0] ?? '0', 10)
-            : undefined,
+          arrivalHour,
           returnDate,
+          returnDepartureHour,
+          returnArrivalHour,
           bookingUrl: googleFlightsUrl,
           bookingToken: it.booking_token,
         };
